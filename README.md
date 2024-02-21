@@ -1,83 +1,88 @@
 <p align="center">
   <a href="https://example.com/">
-    <img src="https://via.placeholder.com/72" alt="Logo" width=72 height=72>
+    <!-- <img src="https://via.placeholder.com/72" alt="Logo" width=72 height=72> -->
+    <img src="./banner.jpg" alt="EYMO banner" width="400" height="200">
   </a>
 
-  <h3 align="center">Logo</h3>
+  <h3 align="center">EYMO</h3>
 
   <p align="center">
-    Short description
+    A compact robotic companion blending machine learning and generative AI to create personalized and interactive experiences.
     <br>
-    <a href="https://reponame/issues/new?template=bug.md">Report bug</a>
+    <a href="https://github.com/xavi-burgos99/eymo/issues/new?template=bug.md">Report bug</a>
     ·
-    <a href="https://reponame/issues/new?template=feature.md&labels=feature">Request feature</a>
+    <a href="https://github.com/xavi-burgos99/eymo/issues/new?template=feature.md&labels=feature">Request feature</a>
   </p>
 </p>
 
 
 ## Table of contents
 
-- [Quick start](#quick-start)
-- [Status](#status)
+- [Table of contents](#table-of-contents)
+- [Introduction](#introduction)
 - [What's included](#whats-included)
 - [Bugs and feature requests](#bugs-and-feature-requests)
 - [Contributing](#contributing)
 - [Creators](#creators)
 - [Thanks](#thanks)
-- [Copyright and license](#copyright-and-license)
 
 
-## Quick start
+## Introduction
 
-Some text
+Eymo is a compact robotic companion blending machine learning and generative AI to create personalized and interactive experiences. It learns from its interactions, offering customized conversations, entertainment, and learning opportunities. Eymo is the perfect blend of technology and companionship, making every moment more engaging and enjoyable.
 
-- Instruction 1
-- Instruction 2
-- Instruction 3
-
-## Status
-
-Here goes all the budgets
 
 ## What's included
 
-Some text
+Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations. You'll see something like this:
 
 ```text
-folder1/
-└── folder2/
-    ├── folder3/
-    │   ├── file1
-    │   └── file2
-    └── folder4/
-        ├── file3
-        └── file4
+app/
+└── config/
+    ├── assets/
+    │   ├── img/
+    │   │   ├── image1.jpg
+    │   │   └── image2.png
+    │   └── js/
+    │       ├── script1.js
+    │       └── script2.js
+    └── scss/
+        ├── partials/
+        │   ├── _buttons.scss
+        │   └── _carousel.scss
+        ├── _variables.scss
+        └── style.scss
 ```
 
 ## Bugs and feature requests
 
-Have a bug or a feature request? Please first read the [issue guidelines](https://reponame/blob/master/CONTRIBUTING.md) and search for existing and closed issues. If your problem or idea is not addressed yet, [please open a new issue](https://reponame/issues/new).
+Have a bug or a feature request? Please first read the ~~[issue guidelines](https://github.com/xavi-burgos99/eymo/blob/main/CONTRIBUTING.md)~~ and search for existing and closed issues. If your problem or idea is not addressed yet, [please open a new issue](https://github.com/xavi-burgos99/eymo/issues/new).
 
 ## Contributing
 
-Please read through our [contributing guidelines](https://reponame/blob/master/CONTRIBUTING.md). Included are directions for opening issues, coding standards, and notes on development.
-
-Moreover, all HTML and CSS should conform to the [Code Guide](https://github.com/mdo/code-guide), maintained by [Main author](https://github.com/usernamemainauthor).
-
-Editor preferences are available in the [editor config](https://reponame/blob/master/.editorconfig) for easy use in common text editors. Read more and download plugins at <https://editorconfig.org/>.
+Please read through our ~~[contributing guidelines](https://reponame/blob/master/CONTRIBUTING.md)~~. Included are directions for opening issues, coding standards, and notes on development.
 
 ## Creators
 
-**Creator 1**
+1. **Gabriel J. Betés**
+   - GitHub: <https://github.com/GabrielJuan349/>
+   - LinkedIn: <https://linkedin.com/in/gabi-juan/>
 
-- <https://github.com/usernamecreator1>
+2. **Xavier Burgos**
+   - Website: <https://xburgos.es/>
+   - GitHub: <https://github.com/xavi-burgos99/>
+   - LinkedIn: <https://linkedin.com/in/xavi-burgos/>
+
+3. **Yeray Cordero**
+   - GitHub: <https://github.com/yeray142/>
+   - LinkedIn: <https://linkedin.com/in/yeray142/>
+
+4. **Javier Esmorris**
+   - GitHub: <https://github.com/jaesmoris/>
+
 
 ## Thanks
 
-Some Text
+This project has been made for the RLP (Robotics, Language and Planing) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
 
-## Copyright and license
-
-Code and documentation copyright 2011-2018 the authors. Code released under the [MIT License](https://reponame/blob/master/LICENSE).
-
-Enjoy :metal:
+Code and documentation copyright 2024 EYMO. Code released under the [MIT License](https://reponame/blob/master/LICENSE).
