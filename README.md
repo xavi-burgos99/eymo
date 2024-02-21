@@ -64,25 +64,27 @@ Please read through our ~~[contributing guidelines](https://reponame/blob/master
 
 ## Creators
 
-1. **Gabriel J. Betés**
-   - GitHub: <https://github.com/GabrielJuan349/>
-   - LinkedIn: <https://linkedin.com/in/gabi-juan/>
-
-2. **Xavier Burgos**
+1. **Xavier Burgos**
    - Website: <https://xburgos.es/>
    - GitHub: <https://github.com/xavi-burgos99/>
    - LinkedIn: <https://linkedin.com/in/xavi-burgos/>
 
-3. **Yeray Cordero**
+2. **Yeray Cordero**
    - GitHub: <https://github.com/yeray142/>
    - LinkedIn: <https://linkedin.com/in/yeray142/>
 
-4. **Javier Esmorris**
+3. **Javier Esmorris**
    - GitHub: <https://github.com/jaesmoris/>
+
+4. **Gabriel Juan**
+   - GitHub: <https://github.com/GabrielJuan349/>
+   - LinkedIn: <https://linkedin.com/in/gabi-juan/>
 
 
 ## Thanks
 
 This project has been made for the RLP (Robotics, Language and Planing) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
+
+Special thanks to [Samya Karzazi](https://www.linkedin.com/in/samya-k-2ba678235/) for her help with the area of Media Systems (also a subject of the Computer Engineering degree at the UAB). We will be working together with her to develop the robot's programming, as it will allow us to apply the knowledge acquired in both subjects.
 
 Code and documentation copyright 2024 EYMO. Code released under the [MIT License](https://reponame/blob/master/LICENSE).
