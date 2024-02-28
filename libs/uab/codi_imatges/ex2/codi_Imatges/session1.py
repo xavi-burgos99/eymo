@@ -4,6 +4,9 @@ import cv2
 import os
 import matplotlib.pyplot as plt
 
+# Inicialitzar la figura fora del bucle
+plt.figure(figsize=(12, 8))
+
 # Bucle per processar les imatges del 1 al 8
 for i in range(1, 9):
     image_path = os.path.join("", f"image{i}.png")
@@ -15,7 +18,6 @@ for i in range(1, 9):
     if os.path.exists(image_path):
         # Obrir l'imatge original
         I = Image.open(image_path)
-        print(f"Image {i}: Size={I.size}, Mode={I.mode}, Format={I.format}")
 
         # Comprimir i guardar l'imatge en format JPEG amb diferents qualitats
         for quality in quality_values:
@@ -29,16 +31,22 @@ for i in range(1, 9):
             target = cv2.imread(compressed_image_path)
             mse_value = metrikz.mse(source, target)
             mse_values.append(mse_value)
-            print(f"Quality {quality}: MSE = {mse_value}")
 
-        # Generar i mostrar el gràfic lineal
-        plt.figure(figsize=(10, 6))
-        plt.plot(quality_values, mse_values, marker='o', linestyle='-', color='b')
-        plt.title(f'MSE vs JPEG Quality for Image {i}')
-        plt.xlabel('JPEG Quality')
-        plt.ylabel('MSE')
-        plt.grid(True)
-        plt.show()
+        # Afegir els valors MSE al gràfic
+        plt.plot(quality_values, mse_values, marker='o', linestyle='-', label=f'Image {i}')
 
     else:
         print(f"Image {i} not found.")
+
+# Configurar el gràfic
+plt.title('MSE vs JPEG Quality for All Images')
+plt.xlabel('JPEG Quality')
+plt.ylabel('MSE')
+plt.legend()
+plt.grid(True)
+
+# Desar la figura
+plt.savefig('figure1.png', format='png', dpi=300)
+
+# Mostrar la figura (opcional)
+plt.show()
