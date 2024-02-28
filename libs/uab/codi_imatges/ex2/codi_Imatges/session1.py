@@ -1,5 +1,4 @@
 import metrikz
-from scipy import misc
 from PIL import Image
 import cv2
 
