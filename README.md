@@ -75,6 +75,7 @@ Please read through our ~~[contributing guidelines](https://reponame/blob/master
 
 3. **Javier Esmorris**
    - GitHub: <https://github.com/jaesmoris/>
+   - LinkedIn: <https://www.linkedin.com/in/javier-esmoris-cerezuela-50840b253/>
 
 4. **Gabriel Juan**
    - GitHub: <https://github.com/GabrielJuan349/>
