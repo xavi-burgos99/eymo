@@ -183,7 +183,7 @@ def get_images():
 
 def check_image_availability(images):
     if len(images) <= 1:
-        print "Error: Use 1 reference image and at least 1 query image."
+        print("Error: Use 1 reference image and at least 1 query image.")
         get_usage()
         exit()
 
@@ -377,20 +377,20 @@ def count_cols():
 
 def check_help():
     if __cl.isSelectedHelp:
-        print get_help()
+        print(get_help())
         exit(0)
 
 
 def check_usage():
     if len(argv) < 2:
-        print get_usage()
+        print(get_usage())
         exit(0)
 
 
 def __main():
     check_help()
     check_usage()
-    print select_output_type()
+    print(select_output_type())
 
 
 __cl = CommandLineOpt()
