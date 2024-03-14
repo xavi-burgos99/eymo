@@ -2,7 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 
-import metrikz  # Assumeix que tens una llibreria anomenada metrikz que pot calcular SSIM
+import metrikz
 import utility
 
 
