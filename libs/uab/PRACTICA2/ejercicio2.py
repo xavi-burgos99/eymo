@@ -1,9 +1,3 @@
-import cv2
-import metrikz
-import utility
-import pylab
-import matplotlib.pyplot as plt
-
 if __name__ == '__main__':
     input_file = './videos_y4m/bus_cif.y4m'
 
