@@ -1,5 +1,8 @@
 from metrikz import *
 import numpy as np
+import time
+from PIL import Image
+import numpy as np
 
 
 def calcular_sad(bloque1, bloque2):
@@ -12,6 +15,8 @@ def block_matching(frame_actual, frame_anterior, tamaño_bloque=8, restriccion=F
     vectores_movimiento = []
     errores_prediccion = []
     mse_total = 0
+
+    s = time.time()
 
     for y in range(0, alto, tamaño_bloque):
         for x in range(0, ancho, tamaño_bloque):
@@ -41,11 +46,11 @@ def block_matching(frame_actual, frame_anterior, tamaño_bloque=8, restriccion=F
             mse_total += mse(bloque_actual, mejor_bloque)
 
     mse_promedio = mse_total / len(vectores_movimiento)
-    return vectores_movimiento, errores_prediccion, mse_promedio
 
+    e = time.time()
+    time_bm = e - s
+    return vectores_movimiento, errores_prediccion, mse_promedio, time_bm
 
-from PIL import Image
-import numpy as np
 
 # Cargar las imágenes y convertirlas a escala de grises
 frame_anterior = Image.open('frame1_1.png').convert('L')
@@ -64,11 +69,13 @@ print("Frame Actual:", frame_actual_np.shape)
 tamaño_bloque = 8
 
 # Aplicar el algoritmo de Block Matching
-vectores_movimiento, errores_prediccion, mse_promedio = block_matching(
+vectores_movimiento, errores_prediccion, mse_promedio, time_bm = block_matching(
     frame_actual_np, frame_anterior_np, tamaño_bloque, restriccion=False
 )
 
 # Imprimir los resultados
-print("Vectores de movimiento:", vectores_movimiento)
-print("Errores de predicción:", errores_prediccion)
+#print("Vectores de movimiento:", vectores_movimiento)
+#print("Errores de predicción:", errores_prediccion)
+
 print("MSE promedio:", mse_promedio)
+print("Timepo de ejecución:", time_bm)
