@@ -20,17 +20,29 @@
 
 - [Table of contents](#table-of-contents)
 - [Introduction](#introduction)
+- [Installation](#installation)
+   - [Cloud](#cloud)
+   - [Physic Robot](#physic-robot)
 - [What's included](#whats-included)
+- [To Do](#to-do)
 - [Bugs and feature requests](#bugs-and-feature-requests)
 - [Contributing](#contributing)
 - [Creators](#creators)
-- [Thanks](#thanks)
+- [Acknowledgement](#acknowledgement)
+- [References](#references)
+- [License](#license)
 
 
 ## Introduction
 
 Eymo is a compact robotic companion blending machine learning and generative AI to create personalized and interactive experiences. It learns from its interactions, offering customized conversations, entertainment, and learning opportunities. Eymo is the perfect blend of technology and companionship, making every moment more engaging and enjoyable.
 
+
+## Installation
+
+### Cloud
+
+### Physic Robot
 
 ## What's included
 
@@ -81,10 +93,15 @@ Please read through our ~~[contributing guidelines](https://reponame/blob/master
    - LinkedIn: <https://linkedin.com/in/gabi-juan/>
 
 
-## Thanks
+## Acknowledgement
 
 This project has been made for the RLP (Robotics, Language and Planing) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
 
 Special thanks to [Samya Karzazi](https://www.linkedin.com/in/samya-k-2ba678235/) for her help with the area of Media Systems (also a subject of the Computer Engineering degree at the UAB). We will be working together with her to develop the robot's programming, as it will allow us to apply the knowledge acquired in both subjects.
 
+## References
+
+## License
+
 Code and documentation copyright 2024 EYMO. Code released under the [MIT License](https://reponame/blob/master/LICENSE).
+
