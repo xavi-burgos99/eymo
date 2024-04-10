@@ -57,9 +57,29 @@ def func_quantized(block):
 	qm[:, :] = quantization_process(dct2(block[:,:]))
 	return qm
 
-# Funció per crear l'algoritme de motion compensation. DECODIFICADOR
-def func_motion_compensation(actual_position, motion_vector, errors_predicio):
-	pass
+def func_motion_compensation(actual_position: list, motion_vector: list, errors_prediction: list, frame: np.ndarray) -> tuple:
+	"""Motion compensation algorithm
+	Args:
+		actual_position (list): List of actual positions
+		motion_vector (list): List of motion vectors
+		errors_predicio (list): List of quantized errors
+		frame (np.ndarray): The reference frame
+	Returns:
+		tuple: Tuple with the compensated frame and the frame with the errors
+	"""
+	frame3 = np.zeros(frame.shape, dtype=np.int16)
+	frame4 = np.zeros(frame.shape, dtype=np.int16)
+	for i in range(len(actual_position)):
+		x, y = actual_position[i]
+		xm, ym = motion_vector[i]
+		error = errors_prediction[i]
+		block = frame[x:x+8, y:y+8]
+		block_prev = frame[xm:xm+8, ym:ym+8]
+		error_block = np.multiply(block_prev, error)
+		block = block + error_block
+		frame3[x:x+8, y:y+8] = block
+		frame4[x:x+8, y:y+8] = block + error_block
+	return frame3, frame4
 
 def main():
 	I1 = Image.open("frame0_1.png")		# Old frame
@@ -112,7 +132,7 @@ def main():
 	frame4 = np.zeros(frame1.shape, dtype=np.int16)
 
 	# Fill frame3 and frame4 with the motion compensation algorithm
-	func_motion_compensation(actual_position, motion_vector, errors_prediction)
+	frame3, frame4 = func_motion_compensation(actual_position, motion_vector, errors_prediction, frame1)
 
 	print ("SSIM of frame3-frame2:", metrikz.ssim(frame3, frame2))
 	print ("SSIM of frame4-frame2:", metrikz.ssim(frame4, frame2))
