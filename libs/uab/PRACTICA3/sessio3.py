@@ -6,8 +6,6 @@ import metrikz
 import time
 import matplotlib.pyplot as plt
 
-from libs.uab.PRACTICA3.exercici1 import block_matching
-
 quantization_matrix = [[16.0, 11.0, 10.0, 16.0, 24.0, 40.0, 51.0, 61.0],
                        [12.0, 12.0, 14.0, 19.0, 26.0, 58.0, 60.0, 55.0],
                        [14.0, 13.0, 16.0, 24.0, 40.0, 57.0, 69.0, 56.0],
@@ -52,6 +50,11 @@ def quantization_process(block: np.ndarray) -> np.ndarray:
     return qm
 
 
+def inv_quantization_process(block, quantization_matrix):
+    """ Realiza la cuantización inversa de los coeficientes DCT """
+    return block * quantization_matrix
+
+
 def func_quantized(block):
     """Quantization of the DCT coefficients
     Args:
@@ -62,6 +65,61 @@ def func_quantized(block):
     qm = np.zeros((8, 8), dtype=int)
     qm[:, :] = quantization_process(dct2(block[:, :]))
     return qm
+
+
+def block_matching(frame_actual, frame_anterior, tamaño_bloque=8, restriccion=False, tamaño_ventana=24):
+    assert (tamaño_ventana - tamaño_bloque > 0)
+    assert (tamaño_ventana % 2 == 0)
+    alto, ancho = frame_actual.shape
+
+    # Arrays to store data
+    vectores_movimiento = []
+    errores_prediccion = []
+    actual_position = []
+
+    mse_total = 0
+
+    s = time.time()
+
+    for y in range(0, alto, tamaño_bloque):
+        for x in range(0, ancho, tamaño_bloque):
+            bloque_actual = frame_actual[y:y + tamaño_bloque, x:x + tamaño_bloque]
+            bloque_actual_quant = func_quantized(bloque_actual)
+
+            sad_min = np.inf
+            mejor_movimiento = (0, 0)
+            mejor_bloque = None
+
+            # Agrega posicion actual al array de posiciones
+            actual_position.append((x, y))
+
+            # Determinar los límites de la región de búsqueda
+            y_min = max(0, y - (tamaño_ventana // 2) - tamaño_bloque // 2) if restriccion else 0
+            y_max = min(alto, y + (tamaño_ventana // 2) + tamaño_bloque // 2) if restriccion else alto
+            x_min = max(0, x - (tamaño_ventana // 2) - tamaño_bloque // 2) if restriccion else 0
+            x_max = min(ancho, x + (tamaño_ventana // 2) + tamaño_bloque // 2) if restriccion else ancho
+
+            step = 1 if restriccion else tamaño_bloque
+            for y_ref in range(y_min, y_max - tamaño_bloque + 1, step):
+                for x_ref in range(x_min, x_max - tamaño_bloque + 1, step):
+                    bloque_ref = frame_anterior[y_ref:y_ref + tamaño_bloque, x_ref:x_ref + tamaño_bloque]
+                    # sad_actual = mse(bloque_actual, bloque_ref)
+
+                    sad_actual = metrikz.mse(bloque_actual, bloque_ref)
+                    if sad_actual < sad_min:
+                        sad_min = sad_actual
+                        mejor_movimiento = (x_ref - x, y_ref - y)
+                        mejor_bloque = bloque_ref
+
+            vectores_movimiento.append(mejor_movimiento)
+            errores_prediccion.append(np.abs(bloque_actual_quant - func_quantized(mejor_bloque)))
+            mse_total += sad_min
+
+    mse_promedio = mse_total / len(vectores_movimiento)
+
+    e = time.time()
+    time_bm = e - s
+    return vectores_movimiento, errores_prediccion, mse_promedio, time_bm, actual_position
 
 
 def func_motion_compensation(actual_position: list, motion_vector: list, errors_prediction: list,
@@ -75,24 +133,46 @@ def func_motion_compensation(actual_position: list, motion_vector: list, errors_
     Returns:
         tuple: Tuple with the compensated frame and the frame with the errors
     """
+    tamaño_bloque = 8
     frame3 = np.zeros(frame.shape, dtype=np.int16)
     frame4 = np.zeros(frame.shape, dtype=np.int16)
-    for i in range(len(actual_position)):
-        x, y = actual_position[i]
-        xm, ym = motion_vector[i]
-        error = errors_prediction[i]
-        block = frame[x:x + 8, y:y + 8]
-        block_prev = frame[xm:xm + 8, ym:ym + 8]
-        error_block = np.multiply(block_prev, error)
-        block = block + error_block
-        frame3[x:x + 8, y:y + 8] = block
-        frame4[x:x + 8, y:y + 8] = block + error_block
+
+    # Per a cada bloc (BL) de I1, copieu la regió corresponent (mirant els vectors de
+    # moviment) a la posició de BL a la imatge I3.
+    for (x, y), (dx, dy) in zip(actual_position, motion_vector):
+        new_x = x + dx
+        new_y = y + dy
+        frame3[y:y + tamaño_bloque, x:x + tamaño_bloque] = frame[new_y:new_y + tamaño_bloque,
+                                                           new_x:new_x + tamaño_bloque]
+
+    # Convert the NumPy array to a PIL Image object
+    image = Image.fromarray(frame3.astype(np.uint8), 'L')  # 'L' mode is for grayscale images
+    image.show()
+
+    frame4 = np.copy(frame3)
+    for i, (x, y) in enumerate(actual_position):
+        # Extraer el bloque de errores de predicción
+        error_block = errors_prediction[i]
+
+        # Descomprimir el error: cuantización inversa, IDCT e redondeo
+        error_block = inv_quantization_process(error_block, quantization_matrix)
+        error_block = idct2(error_block)
+        error_block = np.round(error_block)
+        error_block = error_block.astype(dtype=np.int8)
+
+        # Sumar el error descomprimido al bloque correspondiente en I4
+        frame4[y:y + tamaño_bloque, x:x + tamaño_bloque] += error_block.astype(dtype=np.int8)
+
+    # Convert the NumPy array to a PIL Image object
+    image = Image.fromarray(frame4.astype(np.uint8), 'L')  # 'L' mode is for grayscale images
+    image.show()
+
     return frame3, frame4
 
 
 def main():
-    I1 = Image.open("frame2_1.png")  # Old frame
-    I2 = Image.open("frame2_2.png")  # New frame
+    I1 = Image.open("frame0_1.png")  # Old frame
+    I2 = Image.open("frame0_2.png")  # New frame
 
     # I1.show()
     img1 = I1.convert('L')
@@ -127,7 +207,7 @@ def main():
     # afegir a vector errors_prediccio l'error quantitzat !! (func_quantized) que es comet per canviar de block al seguent frame
     #
     # TODO: Use func_quantized for error prediction.
-    motion_vector, _, _, _, actual_position = block_matching(frame1, frame2, restriccion=True)
+    motion_vector, errors_prediction, _, _, actual_position = block_matching(frame1, frame2, restriccion=True)
 
     # GENERAR AQUI EL CODI DE VISUALITZACIO
     # crear una línia entre cada posició dels elements dels vectors actual_position i motion_vector que siguin diferents. ex. línia origen (16,32) a (8,32)

@@ -38,8 +38,11 @@ def block_matching(frame_actual, frame_anterior, tamaño_bloque=8, restriccion=F
             for y_ref in range(y_min, y_max - tamaño_bloque + 1, step):
                 for x_ref in range(x_min, x_max - tamaño_bloque + 1, step):
                     bloque_ref = frame_anterior[y_ref:y_ref + tamaño_bloque, x_ref:x_ref + tamaño_bloque]
-                    sad_actual = mse(bloque_actual, bloque_ref)
+                    # sad_actual = mse(bloque_actual, bloque_ref)
+                    bloque_actual_quant = func_quantized(bloque_actual)
+                    bloque_ref_quant = func_quantized(bloque_ref)
 
+                    sad_actual = mse(bloque_actual_quant, bloque_ref_quant)
                     if sad_actual < sad_min:
                         sad_min = sad_actual
                         mejor_movimiento = (x_ref - x, y_ref - y)
