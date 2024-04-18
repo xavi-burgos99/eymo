@@ -93,8 +93,8 @@ Please read through our ~~[contributing guidelines](https://reponame/blob/master
    - LinkedIn: <https://linkedin.com/in/yeray142/>
 
 3. **Javier Esmorris**
-   - LinkedIn: <https://www.linkedin.com/in/javier-esmoris-cerezuela-50840b253/>
    - GitHub: <https://github.com/jaesmoris/>
+   - LinkedIn: <https://www.linkedin.com/in/javier-esmoris-cerezuela-50840b253/>
 
 4. **Gabriel Juan**
    - GitHub: <https://github.com/GabrielJuan349/>
