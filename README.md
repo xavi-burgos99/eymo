@@ -107,9 +107,9 @@ Please read through our ~~[contributing guidelines](https://reponame/blob/master
 
 ## Acknowledgement
 
-This project has been made for the RLP (Robotics, Language and Planing) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
+This project has been made for the RLP (Robotics, Language and Planning) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
 
-For the Cloud project has been made fot the MS (Multimedia Systems) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Jordi Serra](https://www.linkedin.com/in/jordiserraruiz/) for his support and guidance throughout the Cloud Applications and Utilities inside GCP(Google Cloud Platform) for this project.
+The Cloud project was built for the MS (Multimedia Systems) subject in the Computer Engineering degree at [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We want to express our gratitude to our teacher [Jordi Serra](https://www.linkedin.com/in/jordiserraruiz/) for his assistance and support during this project in GCP (Google Cloud Platform).
 
 ## References
 
