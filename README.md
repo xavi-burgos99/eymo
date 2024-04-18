@@ -49,22 +49,29 @@ Eymo is a compact robotic companion blending machine learning and generative AI 
 Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations. You'll see something like this:
 
 ```text
-app/
-└── config/
-    ├── assets/
-    │   ├── img/
-    │   │   ├── image1.jpg
-    │   │   └── image2.png
-    │   └── js/
-    │       ├── script1.js
-    │       └── script2.js
-    └── scss/
-        ├── partials/
-        │   ├── _buttons.scss
-        │   └── _carousel.scss
-        ├── _variables.scss
-        └── style.scss
+src/
+├── rpi/
+│    ├── graphics/
+│    ├── mechanics/ 
+│    ├── controllers/
+│    └── ...     
+├── arduino/
+│   ├── movements/
+│   ├── sensors/
+│   └── ...
+└── cloud/
+    ├── actions/
+    ├── externals/
+    │   ├── class/
+    │   ├── functions/
+    │   └── ...
+    ├── resources/
+    ├── ...
+    └── main.py 
+LICENSE.md
+README.md
 ```
+## To Do
 
 ## Bugs and feature requests
 
@@ -104,4 +111,3 @@ Special thanks to [Samya Karzazi](https://www.linkedin.com/in/samya-k-2ba678235/
 ## License
 
 Code and documentation copyright 2024 EYMO. Code released under the [MIT License](https://reponame/blob/master/LICENSE).
-
