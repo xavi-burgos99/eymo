@@ -94,17 +94,22 @@ Please read through our ~~[contributing guidelines](https://reponame/blob/master
 
 3. **Javier Esmorris**
    - GitHub: <https://github.com/jaesmoris/>
+   - LinkedIn: <https://www.linkedin.com/in/javier-esmoris-cerezuela-50840b253/>
 
 4. **Gabriel Juan**
    - GitHub: <https://github.com/GabrielJuan349/>
    - LinkedIn: <https://linkedin.com/in/gabi-juan/>
 
+5. **Samya Karzazi**
+   - GitHub: <https://github.com/SamyaKarzaziElBachiri>
+   - LinkedIn: <https://linkedin.com/in/samya-k-2ba678235/>
+
 
 ## Acknowledgement
 
-This project has been made for the RLP (Robotics, Language and Planing) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
+This project has been made for the RLP (Robotics, Language and Planning) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
 
-Special thanks to [Samya Karzazi](https://www.linkedin.com/in/samya-k-2ba678235/) for her help with the area of Media Systems (also a subject of the Computer Engineering degree at the UAB). We will be working together with her to develop the robot's programming, as it will allow us to apply the knowledge acquired in both subjects.
+The Cloud project was built for the MS (Multimedia Systems) subject in the Computer Engineering degree at [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We want to express our gratitude to our teacher [Jordi Serra](https://www.linkedin.com/in/jordiserraruiz/) for his assistance and support during this project in GCP (Google Cloud Platform).
 
 ## References
 
