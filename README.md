@@ -99,12 +99,16 @@ Please read through our ~~[contributing guidelines](https://reponame/blob/master
    - GitHub: <https://github.com/GabrielJuan349/>
    - LinkedIn: <https://linkedin.com/in/gabi-juan/>
 
+5. **Samya Karzazi**
+   - GitHub: <https://github.com/SamyaKarzaziElBachiri>
+   - LinkedIn: <https://linkedin.com/in/samya-k-2ba678235/>
+
 
 ## Acknowledgement
 
 This project has been made for the RLP (Robotics, Language and Planing) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
 
-Special thanks to [Samya Karzazi](https://www.linkedin.com/in/samya-k-2ba678235/) for her help with the area of Media Systems (also a subject of the Computer Engineering degree at the UAB). We will be working together with her to develop the robot's programming, as it will allow us to apply the knowledge acquired in both subjects.
+For the Cloud project has been made fot the MS (Multimedia Systems) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Jordi Serra](https://www.linkedin.com/in/jordiserraruiz/) for his support and guidance throughout the Cloud Applications and Utilities inside GCP(Google Cloud Platform) for this project.
 
 ## References
 
