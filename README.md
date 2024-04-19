@@ -54,11 +54,13 @@ src/
 │    ├── graphics/
 │    ├── mechanics/ 
 │    ├── controllers/
-│    └── ...     
+│    ├── ...
+│    └── main.py     
 ├── arduino/
 │   ├── movements/
 │   ├── sensors/
-│   └── ...
+│   ├── ...
+│   └── main.ino
 └── cloud/
     ├── actions/
     ├── externals/
