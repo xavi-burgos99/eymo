@@ -66,8 +66,7 @@ src/
     ├── externals/
     │   ├── class/
     │   ├── functions/
-    │   ├── ...
-    │   └── main.py
+    │   └── ...
     ├── resources/
     ├── ...
     └── main.py 
