@@ -15,7 +15,7 @@ colorama~=0.4.6
 comm~=0.2.2
 traitlets~=5.14.2
 pytz~=2024.1
-pywin32~=306
+pywin32
 packaging~=24.0
 setuptools~=69.2.0
 platformdirs~=4.2.0
