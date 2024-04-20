@@ -40,7 +40,28 @@ Eymo is a compact robotic companion blending machine learning and generative AI 
 
 ## Installation
 
+This section will guide you through the installation process of the EYMO project. The project is divided into two main parts: the cloud and the physic robot. 
+
+The cloud part is responsible for the communication between the robot and the cloud, and the physic robot part is responsible for the robot's movements and sensors.
+
+### Prerequisites
+Before you begin, ensure you have the following installed on your system:
+- Python 3.12 or higher
+
 ### Cloud
+To set up the cloud part of the project, follow these steps:
+
+1. Clone the repository and install the required packages:
+   ```sh
+   git clone https://github.com/xavi-burgos99/eymo.git
+   cd eymo
+   pip install -r requirements.txt
+   ```
+2. Run the cloud server:
+   ```sh
+   uvicorn src.cloud.main:app --reload
+   ```
+3. The cloud server will be running on [http://localhost:8000/](http://localhost:8000/) or your server IP address.
 
 ### Physic Robot
 
@@ -63,7 +84,7 @@ src/
 │   └── main.ino
 └── cloud/
     ├── actions/
-    ├── externals/
+    ├── external/
     │   ├── class/
     │   ├── functions/
     │   └── ...
