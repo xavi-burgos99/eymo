@@ -1,16 +1,15 @@
 import rclpy
 import requests
-import json
 
 from rclpy.node import Node
 from requests import HTTPError, ConnectionError, Timeout, RequestException
-from ..services import SendHttpRequest
+from http_interfaces.srv import SendHttpRequest
 
-URL = 'http://localhost:7125/'  # Change URL accordingly
+URL = 'http://localhost:7125/'
 TOKEN = "Put your token here"
 
 
-class HTTPClientNode(Node):
+class HttpServiceNode(Node):
     def __init__(self):
         super().__init__('http_client_node')
         self.srv = self.create_service(SendHttpRequest, 'send_http_request', self.handle_http_request)
@@ -42,7 +41,7 @@ class HTTPClientNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = HTTPClientNode()
+    node = HttpServiceNode()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()
