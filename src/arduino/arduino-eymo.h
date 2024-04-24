@@ -14,3 +14,6 @@
 #define MotorIN2 10
 #define MotorIN1 11
 #define MotorENA 12
+
+// Obstacule Detection Module
+#include "ObstacleDetectionModule/ObstacleDetectionModule.hpp"
