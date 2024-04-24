@@ -49,22 +49,31 @@ Eymo is a compact robotic companion blending machine learning and generative AI 
 Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations. You'll see something like this:
 
 ```text
-app/
-└── config/
-    ├── assets/
-    │   ├── img/
-    │   │   ├── image1.jpg
-    │   │   └── image2.png
-    │   └── js/
-    │       ├── script1.js
-    │       └── script2.js
-    └── scss/
-        ├── partials/
-        │   ├── _buttons.scss
-        │   └── _carousel.scss
-        ├── _variables.scss
-        └── style.scss
+src/
+├── rpi/
+│    ├── graphics/
+│    ├── mechanics/ 
+│    ├── controllers/
+│    ├── ...
+│    └── main.py     
+├── arduino/
+│   ├── movements/
+│   ├── sensors/
+│   ├── ...
+│   └── main.ino
+└── cloud/
+    ├── actions/
+    ├── externals/
+    │   ├── class/
+    │   ├── functions/
+    │   └── ...
+    ├── resources/
+    ├── ...
+    └── main.py 
+LICENSE.md
+README.md
 ```
+## To Do
 
 ## Bugs and feature requests
 
@@ -87,21 +96,25 @@ Please read through our ~~[contributing guidelines](https://reponame/blob/master
 
 3. **Javier Esmorris**
    - GitHub: <https://github.com/jaesmoris/>
+   - LinkedIn: <https://www.linkedin.com/in/javier-esmoris-cerezuela-50840b253/>
 
 4. **Gabriel Juan**
    - GitHub: <https://github.com/GabrielJuan349/>
    - LinkedIn: <https://linkedin.com/in/gabi-juan/>
 
+5. **Samya Karzazi**
+   - GitHub: <https://github.com/SamyaKarzaziElBachiri>
+   - LinkedIn: <https://linkedin.com/in/samya-k-2ba678235/>
+
 
 ## Acknowledgement
 
-This project has been made for the RLP (Robotics, Language and Planing) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
+This project has been made for the RLP (Robotics, Language and Planning) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
 
-Special thanks to [Samya Karzazi](https://www.linkedin.com/in/samya-k-2ba678235/) for her help with the area of Media Systems (also a subject of the Computer Engineering degree at the UAB). We will be working together with her to develop the robot's programming, as it will allow us to apply the knowledge acquired in both subjects.
+The Cloud project was built for the MS (Multimedia Systems) subject in the Computer Engineering degree at [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We want to express our gratitude to our teacher [Jordi Serra](https://www.linkedin.com/in/jordiserraruiz/) for his assistance and support during this project in GCP (Google Cloud Platform).
 
 ## References
 
 ## License
 
 Code and documentation copyright 2024 EYMO. Code released under the [MIT License](https://reponame/blob/master/LICENSE).
-
