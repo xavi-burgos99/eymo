@@ -1,0 +1,8 @@
+# Request part
+string url
+string json_parameters
+---
+# Response part
+string response
+bool success
+string error_message
