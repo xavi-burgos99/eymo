@@ -1,3 +1,5 @@
+from typing import Any
+
 import requests
 import logging
 
@@ -9,7 +11,7 @@ class ServerCommunication:
         self.host = config['host']
         self.endpoint = config['endpoint']
 
-    def call_server(self, action: str, params: dict) -> dict:
+    def call_server(self, action: str, params: dict) -> str | Any:
         """
         Call the server with the given action and parameters.
         :param action: Action to be performed on the server.
@@ -18,10 +20,14 @@ class ServerCommunication:
         """
         serverIn = ServerIn()
         serverIn.action = action
-        serverIn.params = params
+        serverIn.parameters = params
 
-        logging.info(f"Calling server {self.host}/{self.endpoint} with action: {action}, params: {params}")
-        response = requests.get(f"{self.host}/{self.endpoint}", json=serverIn.__dict__)
+        logging.info(f"Calling server {self.host}/{self.endpoint} with {serverIn.__dict__}...")
+        response = requests.get(f"{self.host}/{self.endpoint}", json=serverIn.__dict__, headers={'Content-Type': 'application/json'})
         logging.info(f"Server response: {response}")
+
+        if response.status_code != 200:
+            logging.error(f"Failed to call server. Status code: {response.status_code}. Reason: {response.reason}")
+            return "Ha habido un problema de conexion con el servidor. Por favor, intenta de nuevo."
 
         return response.json()

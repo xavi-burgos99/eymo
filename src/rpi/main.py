@@ -44,6 +44,7 @@ def main():
     """
     setup_logging()
 
+    logging.info("Checking network connection...")
     if not check_network_connection():
         logging.error("No network connection available. Please check your network settings.")
         return
