@@ -3,6 +3,8 @@ from typing import Any
 import requests
 import logging
 
+from requests import RequestException
+
 from src.rpi.services.models.server_input import ServerIn
 
 
@@ -23,9 +25,13 @@ class ServerCommunication:
         serverIn.parameters = params
 
         logging.info(f"Calling server {self.host}/{self.endpoint} with {serverIn.__dict__}...")
-        response = requests.get(f"{self.host}/{self.endpoint}", json=serverIn.__dict__, headers={'Content-Type': 'application/json'})
-        logging.info(f"Server response: {response}")
+        try:
+            response = requests.get(f"{self.host}/{self.endpoint}", json=serverIn.__dict__, headers={'Content-Type': 'application/json'})
+        except RequestException:
+            logging.error("Failed to connect to the server. Please check the server configurations.")
+            return "Ha habido un problema de conexion con el servidor. Por favor, intenta de nuevo."
 
+        logging.info(f"Server response: {response}")
         if response.status_code != 200:
             logging.error(f"Failed to call server. Status code: {response.status_code}. Reason: {response.reason}")
             return "Ha habido un problema de conexion con el servidor. Por favor, intenta de nuevo."
