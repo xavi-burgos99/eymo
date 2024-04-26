@@ -46,8 +46,6 @@ class VoiceAssistant:
         }
         self.function_map = function_mapping
 
-        self.root = tk.Tk()
-
     def respond(self, text):
         for key, response in self.responses.items():
             if key in text:
@@ -61,7 +59,6 @@ class VoiceAssistant:
     def listen(self):
         logging.info("Starting the voice assistant service...")
         threading.Thread(target=self.run_assistant()).start()
-        self.root.mainloop()
 
     def run_assistant(self):
         logging.info("Voice assistant is running...")
