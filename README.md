@@ -21,8 +21,9 @@
 - [Table of contents](#table-of-contents)
 - [Introduction](#introduction)
 - [Installation](#installation)
-   - [Cloud](#cloud)
-   - [Physic Robot](#physic-robot)
+  - [Prerequisites](#prerequisites)
+  - [Cloud](#cloud)
+  - [Physic Robot](#physic-robot)
 - [What's included](#whats-included)
 - [To Do](#to-do)
 - [Bugs and feature requests](#bugs-and-feature-requests)
@@ -57,11 +58,11 @@ To set up the cloud part of the project, follow these steps:
    cd eymo
    pip install -r requirements.txt
    ```
-2. Run the cloud server:
+2. Run the cloud server on port 7125:
    ```sh
-   uvicorn src.cloud.main:app --reload
+   uvicorn src.cloud.main:app --reload --port 7125
    ```
-3. The cloud server will be running on [http://localhost:8000/](http://localhost:8000/) or your server IP address.
+3. The cloud server will be running on [http://localhost:7125/](http://localhost:7125/) or your server IP address.
 
 ### Physic Robot
 
