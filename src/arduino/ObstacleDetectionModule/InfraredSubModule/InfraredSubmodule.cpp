@@ -1,6 +1,7 @@
 #include <Arduino.h>
+#include "../../utilities.hpp"
 
-int readInfrared(int pin) {
+float readInfrared(int pin) {
     //? Read sensor value
     uint16_t sensorValue_raw = 0;
     float sensorValue = 0.0f;
@@ -15,7 +16,7 @@ int readInfrared(int pin) {
     }
 
     // transform the sensor value to distance in cm
-    sensorValue = (6787.0f /(float) sensorValue_raw - 3.0f) - 4.0f;
+    sensorValue = detection_mesurements(false, 0, (float)sensorValue_raw);
 
     return sensorValue;
 }

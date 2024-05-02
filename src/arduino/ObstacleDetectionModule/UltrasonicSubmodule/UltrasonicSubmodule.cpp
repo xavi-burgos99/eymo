@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include "../../utilities.hpp"
 
 float UltraSonicMetrics(int trigger, int echo){
   long duration = 0;
@@ -15,7 +16,7 @@ float UltraSonicMetrics(int trigger, int echo){
   duration = pulseIn(echo, HIGH);
 
   // transform the pulse data to distance in cm
-  distance = (duration/2) / 29.1;
+  distance = detection_mesurements(true, duration, 0.0f);
   
   return distance;
 

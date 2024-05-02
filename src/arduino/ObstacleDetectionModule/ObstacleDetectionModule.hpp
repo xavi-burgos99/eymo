@@ -14,25 +14,34 @@ class ObstacleDetectionModule{
     public:
         SensorState IRState, FrontState, BackState;
     private:
+        // Sensor pins
+        int _pinIR, _FrontEcho, _FrontTrig, _BackEcho, _BackTrig;
         // Front sensors
-        float FrontDistance, IRDistance;
+        float _FrontDistance, IRDistance;
 
         // Back sensors
-        float BackDistance;
+        float _BackDistance;
 
-        ObstacleDetectionModule(){
+        ObstacleDetectionModule(int pinIR, int FrontEcho, int FrontTrig, int BackEcho, int BackTrig){
+
+            _pinIR = pinIR;
+            _FrontEcho = FrontEcho;
+            _FrontTrig = FrontTrig;
+            _BackEcho = BackEcho;
+            _BackTrig = BackTrig;
+
             IRDistance = 0.0f;
-            FrontDistance = 0.0f;
-            BackDistance = 0.0f;
+            _FrontDistance = 0.0f;
+            _BackDistance = 0.0f;
             IRState = Initiating;
             FrontState = Initiating;
             BackState = Initiating;
         }
 
-        void update( const int pinIR, const int FrontEcho, const int FrontTrig, const int BackEcho, const int BackTrig){
-            IRDistance = readInfrared(pinIR);
-            FrontDistance = UltraSonicMetrics(FrontTrig, FrontEcho);
-            BackDistance = UltraSonicMetrics(BackTrig, BackEcho);
+        void update(){
+            IRDistance = readInfrared(_pinIR);
+            _FrontDistance = UltraSonicMetrics(_FrontTrig, _FrontEcho);
+            _BackDistance = UltraSonicMetrics(_BackTrig, _BackEcho);
 
             if(IRDistance < 10){
                 IRState = Dangerous;
@@ -44,21 +53,21 @@ class ObstacleDetectionModule{
                 IRState = Safe;
             }
 
-            if(FrontDistance < 10){
+            if(_FrontDistance < 10){
                 FrontState = Dangerous;
-            }else if(FrontDistance < 20){
+            }else if(_FrontDistance < 20){
                 FrontState = Warning;
-            }else if(FrontDistance < 30){
+            }else if(_FrontDistance < 30){
                 FrontState = Close;
             }else{
                 FrontState = Safe;
             }
 
-            if(BackDistance < 10){
+            if(_BackDistance < 10){
                 BackState = Dangerous;
-            }else if(BackDistance < 20){
+            }else if(_BackDistance < 20){
                 BackState = Warning;
-            }else if(BackDistance < 30){
+            }else if(_BackDistance < 30){
                 BackState = Close;
             }else{
                 BackState = Safe;

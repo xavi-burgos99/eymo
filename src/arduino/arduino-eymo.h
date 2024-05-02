@@ -8,12 +8,13 @@
 #define IREcho A0
 
 // Motor pins
-#define MotorENB 7
-#define MotorIN4 8
-#define MotorIN3 9
+#define MotorIN4 7
+#define MotorIN3 8
+#define MotorENB 9
 #define MotorIN2 10
-#define MotorIN1 11
-#define MotorENA 12
+#define MotorENA 11
+#define MotorIN1 12
 
 // Obstacule Detection Module
 #include "ObstacleDetectionModule/ObstacleDetectionModule.hpp"
+#include "MotorControlModule/MotorControlModule.hpp"
