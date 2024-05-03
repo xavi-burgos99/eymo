@@ -12,5 +12,8 @@
   "voice": {
     "voice_id": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Speech\\Voices\\Tokens\\TTS_MS_ES-ES_HELENA_11.0",
     "rate": 150
+  },
+  "camera": {
+    "cam_port": 0
   }
 }

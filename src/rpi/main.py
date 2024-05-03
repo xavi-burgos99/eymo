@@ -1,5 +1,6 @@
 import logging
 
+from rpi.controllers.camera_controller import CameraController
 from src.rpi.services.voice_assistant import VoiceAssistant
 from src.rpi.controllers.arduino_controller import ArduinoController
 from src.rpi.controllers.screen_controller import ScreenController
@@ -15,7 +16,7 @@ def setup_logging() -> None:
     logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-def initialize_components() -> tuple[ArduinoController, ScreenController, ServerCommunication, VoiceAssistant]:
+def initialize_components() -> tuple[ArduinoController, ScreenController, ServerCommunication, VoiceAssistant, CameraController]:
     """
     Initialize all components required for the robot's operation.
     :return: Tuple of components (ArduinoController, ScreenController, ServerCommunication, VoiceAssistant)
@@ -35,7 +36,10 @@ def initialize_components() -> tuple[ArduinoController, ScreenController, Server
     logging.info("Launching the voice assistant service...")
     voice_assistant = VoiceAssistant(config['voice'], server_comm)
 
-    return arduino, screen, server_comm, voice_assistant
+    logging.info("Setting up camera controller service...")
+    camera_controller = CameraController(config['camera'])
+
+    return arduino, screen, server_comm, voice_assistant, camera_controller
 
 
 def main():
@@ -49,7 +53,7 @@ def main():
         logging.error("No network connection available. Please check your network settings.")
         return
 
-    arduino, screen, server_comm, voice_assistant = initialize_components()
+    arduino, screen, server_comm, voice_assistant, camera_controller = initialize_components()
 
     try:
         logging.info("Robot is starting up...")

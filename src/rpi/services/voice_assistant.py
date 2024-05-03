@@ -69,8 +69,7 @@ class VoiceAssistant:
         while True:
             try:
                 with sr.Microphone(device_index=0) as mic:
-                    logging.info("Listening through microphone " + mic.list_microphone_names()[mic.device_index] + "...")
-                    # self.recognizer.adjust_for_ambient_noise(mic, duration=0.2)
+                    self.recognizer.adjust_for_ambient_noise(mic, duration=0.2)
                     audio = self.recognizer.listen(mic)
 
                     try:
