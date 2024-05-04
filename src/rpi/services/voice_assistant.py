@@ -1,6 +1,5 @@
 import time
-import tkinter as tk
-
+import re
 import json
 
 import pyttsx3 as tts
@@ -36,14 +35,14 @@ class VoiceAssistant:
         self.speaker.setProperty("voice", config["voice_id"])
         self.speaker.setProperty("rate", config["rate"])
 
-        self.responses = {
-            "buenos días": "Buenas, ¿en qué puedo ayudarte?",
-            "qué tal": "Bien, esperando a que me preguntes algo para poderte ayudar.",
-            "texto": "Se entiende por texto una composición ordenada de signos inscritos en un sistema de escritura, cuya lectura permite recobrar un sentido específico referido por el emisor. La palabra texto proviene del latín textus, que significa tejido o entrelazado, de modo que en el origen mismo de la idea del texto se encuentra su capacidad para contener ideas en un hilo o una secuencia de caracteres.",
-            "puto": "Me cago en tu puta vida, cabron! No me insultes que te pego.",
-            "ayuda": "get_help",
-            "grupo": "Hola, gente de Chilling Tea \uD83E\uDDCB"
-        }
+        self.responses = json.load(open('./static/intents.json'))["responses"]
+
+        self.pattern = config["pattern"]
+        self.threshold_duration = config["threshold_duration"]
+
+        self.timeout = config.get("listen_timeout")
+        self.activated_timeout = config["activated_timeout"]
+
         self.function_map = function_mapping
 
     def respond(self, text):
@@ -62,53 +61,58 @@ class VoiceAssistant:
 
     def run_assistant(self):
         logging.info("Voice assistant is running...")
-        self.speaker.say("Se ha iniciado el asistente de voz. Di 'EYMO' para activar el asistente.")
+        self.speaker.say("Se ha iniciado el asistente de voz. Di 'Oye EYMO' o 'Hola EYMO' para activar el asistente.")
         self.speaker.runAndWait()
-        self.speaker.stop()
 
         while True:
-            try:
-                with sr.Microphone(device_index=0) as mic:
-                    self.recognizer.adjust_for_ambient_noise(mic, duration=0.2)
-                    audio = self.recognizer.listen(mic)
+            with sr.Microphone(device_index=0) as mic:
+                self.recognizer.adjust_for_ambient_noise(mic, duration=self.threshold_duration)
+                logging.info("Listening...")
+                audio = self.recognizer.listen(mic, None)
 
-                    try:
-                        text = self.recognizer.recognize_google(audio, language="es-ES")
-                    except sr.UnknownValueError as uve:
-                        continue
+                text = self.recognize_speech(audio)
+                if text:
+                    match = re.match(self.pattern, text, re.IGNORECASE)
+                    if match:
+                        after_pattern = text[match.end():].strip()
+                        logging.info(f"After pattern: {after_pattern}")
+                        self.activate_assistant(mic, after_pattern)
 
-                    logging.info(f"Speech recognized: {text}")
-                    text = text.lower()
+    def recognize_speech(self, audio):
+        try:
+            logging.info("Trying to recognize speech...")
+            text = self.recognizer.recognize_google(audio, language="es-ES")
+            logging.info(f"Speech recognized: {text}")
+            return text.lower()
+        except sr.UnknownValueError:
+            return None
 
-                    if "eymo" in text or "eimo" in text or "heimo" in text or "heymo" in text:
-                        self.speaker.say("Hola Yeray, ¿cómo puedo ayudarte?")
-                        self.speaker.runAndWait()
-                        self.speaker.stop()
+    def activate_assistant(self, mic, after_pattern=None):
+        logging.info("[ASSISTANT ACTIVATED] Keyword detected. Activating assistant.")
+        if not after_pattern:
+            self.speaker.say("Hola Yeray, ¿cómo puedo ayudarte?")
+            self.speaker.runAndWait()
 
-                        timer = time.time()
-                        while timer + 30 > time.time():
-                            audio = self.recognizer.listen(mic, timeout=30)
-                            try:
-                                text = self.recognizer.recognize_google(audio, language="es-ES")
-                            except sr.UnknownValueError as uve:
-                                continue
+        end_time = time.time() + self.activated_timeout
+        while time.time() < end_time:
+            logging.info("[ASSISTANT ACTIVATED] Listening...")
 
-                            text = text.lower()
-                            logging.info(f"Speech recognized: {text}")
+            if after_pattern:
+                text = after_pattern
+                after_pattern = None
+            else:
+                self.recognizer.adjust_for_ambient_noise(mic, duration=self.threshold_duration)
+                audio = self.recognizer.listen(mic, timeout=self.timeout)
+                text = self.recognize_speech(audio)
 
-                            if text == "para" or text == "adiós":
-                                self.speaker.say("Adiós Yeray, que tengas un buen día.")
-                                self.speaker.runAndWait()
-                                self.speaker.stop()
-                                break
-                            else:
-                                if text is not None:
-                                    response = self.respond(text)
-                                    if response is not None:
-                                        self.speaker.say(response)
-                                        self.speaker.runAndWait()
+            if text == "para" or text == "adiós":
+                self.speaker.say("Adiós Yeray, que tengas un buen día.")
+                self.speaker.runAndWait()
+                break
+            elif text:
+                response = self.respond(text)
+                if response:
+                    self.speaker.say(response)
+                    self.speaker.runAndWait()
 
-                        logging.error("Aborted. No action detected.")
-            except Exception as e:
-                logging.error(f"An error occurred: {e}")
-                continue
+        logging.error("[ASSITANT ACTIVATED] No action detected. Deactivating assistant...")

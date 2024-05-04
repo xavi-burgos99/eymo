@@ -1,5 +1,5 @@
 import logging
-from typing import Any
+import threading
 
 import cv2
 import numpy as np
@@ -17,7 +17,12 @@ class CameraController:
         return image
 
     def record_video(self, duration):
-        # TODO: Revisar este codigo
+        threading.Thread(target=self._record_video, args=(duration,)).start()
+
+    def get_camera(self):
+        return self.cam
+
+    def _record_video(self, duration):
         if not self.cam.isOpened():
             logging.error("Cannot open camera")
             return None
@@ -33,10 +38,11 @@ class CameraController:
                     print("Can't receive frame (stream end?). Exiting ...")
                     break
                 video_frames.append(frame)
+                cv2.imshow('Video', frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
         finally:
             self.cam.release()
+            cv2.destroyAllWindows()
 
         return video_frames
-
-    def get_camera(self):
-        return self.cam

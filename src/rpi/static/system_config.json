@@ -11,7 +11,11 @@
   },
   "voice": {
     "voice_id": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Speech\\Voices\\Tokens\\TTS_MS_ES-ES_HELENA_11.0",
-    "rate": 150
+    "rate": 150,
+
+    "pattern": "^(oye|ola|hola|eymo|eimo|heimo|heymo)\\s+(eymo|eimo|heimo|heymo)\\b",
+    "threshold_duration": 0.4,
+    "activated_timeout": 30
   },
   "camera": {
     "cam_port": 0
