@@ -27,6 +27,7 @@ class GeminiAction(BaseAction, ABC):
         for chunk in responses:
             text_response.append(chunk.text)
         return "".join(text_response)
+    
 
     def handle(self, parameters: dict):
         assert self.PROMPT_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.PROMPT_PARAM_NAME)
@@ -34,4 +35,6 @@ class GeminiAction(BaseAction, ABC):
         if self.chat is None or parameters['reset']:
             self.chat = self.model.start_chat()
 
-        return self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME])
+        result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME])
+
+        return super().response_json('gemini', result)
