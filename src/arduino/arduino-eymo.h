@@ -1,3 +1,7 @@
+// Important Libraries
+#include <Wire.h>
+#include <Arduino.h>
+
 // UltraSonic Pins
 #define US1Echo 2
 #define US1Trig 3
@@ -8,13 +12,13 @@
 #define IREcho A0
 
 // Motor pins
-#define MotorIN4 7
-#define MotorIN3 8
-#define MotorENB 9
-#define MotorIN2 10
-#define MotorENA 11
-#define MotorIN1 12
+#define MotorE1 9
+#define MotorM1 10
+#define MotorE2 11
+#define MotorM2 12
 
 // Obstacule Detection Module
 #include "ObstacleDetectionModule/ObstacleDetectionModule.hpp"
+
+// Motor Control Module
 #include "MotorControlModule/MotorControlModule.hpp"
