@@ -3,6 +3,7 @@ from abc import ABC
 from src.cloud.actions.BaseAction import BaseAction
 from src.cloud.external.TextToSpeech import text_to_speech
 
+import re
 import vertexai
 from vertexai.generative_models import GenerativeModel, ChatSession
 
@@ -23,11 +24,13 @@ class GeminiAction(BaseAction, ABC):
         self.chat = None
 
     def get_chat_response(self, chat: ChatSession, prompt: str) -> str:
-        text_response = []
-        responses = chat.send_message(prompt, stream=True)
+        text_response = ""
+        responses = chat.send_message(f"Brevemente y en español: {prompt}", stream=True)
         for chunk in responses:
-            text_response.append(chunk.text)
-        return "".join(text_response)
+            clean_text = chunk.text.replace('\n', '')
+            clean_text = re.sub(r'[^a-zA-Z0-9,.:;¿?¡!áéíóúÁÉÍÓÚüÜ\s]', ' ', clean_text)
+            text_response += clean_text.strip()
+        return text_response
     
 
     def handle(self, parameters: dict):
@@ -38,6 +41,6 @@ class GeminiAction(BaseAction, ABC):
 
         result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME])
         result_base64 = text_to_speech(result)
-        
+
         return super().response_json('gemini', result_base64)
     

@@ -15,7 +15,7 @@ def text_to_speech(input_text : str, type: str = "base64"):
     synthesis_input = texttospeech.SynthesisInput(text=input_text)
 
     # Characteristic of the voice
-    voice = texttospeech.VoiceSelectionParams(language_code="es-ES", name="es-ES-Polyglot-1")
+    voice = texttospeech.VoiceSelectionParams(language_code="es-ES", name="es-ES-Polyglot-1", ssml_gender="MALE")
 
     audio_config = texttospeech.AudioConfig(pitch=7.6, speaking_rate=1.50, effects_profile_id=["small-bluetooth-speaker-class-device"], audio_encoding=texttospeech.AudioEncoding.MP3)
 
@@ -24,8 +24,8 @@ def text_to_speech(input_text : str, type: str = "base64"):
     
     if type == "base64":
         return save_audio_base64(response)
-    elif type == "file":
-        return save_audio(response, input_text, type)
+    else:
+        return save_audio(response, "gemini_temp_audio", type)
 
 
 
