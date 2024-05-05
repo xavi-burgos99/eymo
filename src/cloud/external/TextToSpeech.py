@@ -1,7 +1,7 @@
 import base64
 from google.cloud import texttospeech
 
-def text_to_speech(input_text : str):
+def text_to_speech(input_text : str, type: str = "base64"):
     """Synthesizes speech from the input string of text.
 
     Args:
@@ -21,8 +21,12 @@ def text_to_speech(input_text : str):
 
     # Perform the text-to-speech request on the text input with the selected
     response = client.synthesize_speech(input=synthesis_input, voice=voice, audio_config=audio_config)
+    
+    if type == "base64":
+        return save_audio_base64(response)
+    elif type == "file":
+        return save_audio(response, input_text, type)
 
-    return save_audio_base64(response)
 
 
 def save_audio_base64(response: str) -> str:
@@ -30,11 +34,11 @@ def save_audio_base64(response: str) -> str:
     return base64.b64encode(response.audio_content).decode('utf-8')
 
 
-def save_audio(response: str, file_name: str):
+def save_audio(response: str, file_name: str, type: str = "mp3"):
     # The response's audio_content saved to a mp3 file.
-    with open(f"{file_name}.mp3", "wb") as out:
+    with open(f"{file_name}.{type}", "wb") as out:
         # Write the response to the output file.
         out.write(response.audio_content)
-        print('Audio content written to file "{}"'.format(file_name))
+        return ('Audio content written to file "{}"'.format(file_name))
 
     

@@ -38,5 +38,6 @@ class GeminiAction(BaseAction, ABC):
 
         result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME])
         result_base64 = text_to_speech(result)
+        
         return super().response_json('gemini', result_base64)
     
