@@ -1,6 +1,7 @@
 from abc import ABC
 
 from src.cloud.actions.BaseAction import BaseAction
+from src.cloud.external.TextToSpeech import text_to_speech
 
 import vertexai
 from vertexai.generative_models import GenerativeModel, ChatSession
@@ -36,5 +37,6 @@ class GeminiAction(BaseAction, ABC):
             self.chat = self.model.start_chat()
 
         result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME])
-
-        return super().response_json('gemini', result)
+        result_base64 = text_to_speech(result)
+        return super().response_json('gemini', result_base64)
+    
