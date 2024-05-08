@@ -21,15 +21,16 @@ def get_video_id_from_query(youtube_api_key: str, query: str) -> str:
     except HttpError as e:
         print(f"An HTTP error {e.resp.status} occurred: {e.content}")
 
-def get_song_audio_url(client, song_name: str, youtube_api_key: str) -> str:
+def get_song_audio_url(client, song_name: str, youtube_api_key: str, video_id: str = None) -> str:
     """
     Prints out the first audio stream URL for a video found by song name.
     """
-    video_id = get_video_id_from_query(youtube_api_key, song_name)
-    if not video_id:
-        print(f"No video found for '{song_name}'.")
-        return
-
+    if video_id is None:
+        video_id = get_video_id_from_query(youtube_api_key, song_name)
+        if not video_id:
+            print(f"No video found for '{song_name}'.")
+            return
+    
     video = client.get_video(video_id)
     audio_streams = video.get_streams('audio')
 

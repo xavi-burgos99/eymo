@@ -10,6 +10,7 @@ from vertexai.generative_models import GenerativeModel, ChatSession
 
 class GeminiAction(BaseAction, ABC):
     PROMPT_PARAM_NAME = "prompt"
+    IMAGE_PARAM_NAME = "image"
 
     def __init__(self):
         super().__init__()
@@ -38,8 +39,8 @@ class GeminiAction(BaseAction, ABC):
         assert self.PROMPT_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.PROMPT_PARAM_NAME)
 
         image = None
-        if parameters['image']:
-            image = parameters['image']
+        if parameters.get(self.IMAGE_PARAM_NAME):
+            image = parameters[self.IMAGE_PARAM_NAME]
 
         if self.chat is None or parameters['reset']:
             self.chat = self.model.start_chat()  
