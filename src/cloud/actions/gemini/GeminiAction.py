@@ -23,8 +23,9 @@ class GeminiAction(BaseAction, ABC):
         self.model = GenerativeModel(self.settings['model'])
         self.chat = None
 
-    def get_chat_response(self, chat: ChatSession, prompt: str) -> str:
+    def get_chat_response(self, chat: ChatSession, prompt: str, image: str) -> str:
         text_response = ""
+
         responses = chat.send_message(f"Brevemente y en español: {prompt}", stream=True)
         for chunk in responses:
             clean_text = chunk.text.replace('\n', '')
@@ -36,10 +37,14 @@ class GeminiAction(BaseAction, ABC):
     def handle(self, parameters: dict):
         assert self.PROMPT_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.PROMPT_PARAM_NAME)
 
-        if self.chat is None or parameters['reset']:
-            self.chat = self.model.start_chat()
+        image = None
+        if parameters['image']:
+            image = parameters['image']
 
-        result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME])
+        if self.chat is None or parameters['reset']:
+            self.chat = self.model.start_chat()  
+
+        result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME], parameters[self.IMAGE_PARAM_NAME])
         result_base64 = text_to_speech(result)
 
         return super().response_json('gemini', result_base64)

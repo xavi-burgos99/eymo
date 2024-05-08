@@ -60,7 +60,7 @@ To set up the cloud part of the project, follow these steps:
    ```
 2. Run the cloud server on port 7125:
    ```sh
-   uvicorn src.cloud.main:app --reload --port 8000
+   uvicorn src.cloud.main:app --reload --port 7125
    ```
 3. The cloud server will be running on [http://localhost:7125/](http://localhost:7125/) or your server IP address.
 
