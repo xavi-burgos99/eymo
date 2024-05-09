@@ -62,6 +62,10 @@ To set up the cloud part of the project, follow these steps:
    ```sh
    uvicorn src.cloud.main:app --reload --port 7125
    ```
+   If you want to run it using HTTPS, use this command instead:
+    ```sh
+    uvicorn src.cloud.main:app --reload --port 7125 --ssl-keyfile ./src/cloud/static/key_tst.pem  --ssl-certfile ./src/cloud/static/cert_tst.pem
+    ```
 3. The cloud server will be running on [http://localhost:7125/](http://localhost:7125/) or your server IP address.
 
 ### Physic Robot
