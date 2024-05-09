@@ -8,8 +8,11 @@ import speech_recognition as sr
 import threading
 import logging
 
-from rpi.services.server_communication import ServerCommunication
+from services.server_communication import ServerCommunication
+from services.models.audio_player import AudioPlayer
 
+
+player = None
 
 def load_responses(filepath):
     with open(filepath, 'r', encoding='utf-8') as file:
@@ -17,14 +20,30 @@ def load_responses(filepath):
     return data['responses']
 
 
-def get_help():
+def get_help(args):
     return "No te quiero ayudar. Me caes mal."
 
 
-function_mapping = {
-    "get_help": get_help
-}
+def play_song(args):
+    song_name, server_comm = args[0], args[1]
+    response = server_comm.call_server("music", {"song_name": song_name}).get("response")
+    song_url = response.get('result')
+    logging.info(f"Song URL: {song_url}")
 
+    logging.info("Creating audio player...")
+    player = AudioPlayer(song_url)
+    logging.info("Starting audio player...")
+    playback_thread = threading.Thread(target=player.play)
+    logging.info("Starting playback thread...")
+    playback_thread.start()
+    logging.info("Playback thread started.")
+    return player
+
+
+function_mapping = {
+    "get_help": get_help,
+    "play_song": play_song
+}
 
 class VoiceAssistant:
     def __init__(self, config: dict, server_communication: ServerCommunication):
@@ -46,10 +65,31 @@ class VoiceAssistant:
         self.function_map = function_mapping
 
     def respond(self, text):
+        global player
+
+        if "pausa" in text:
+            if player:
+                logging.info("Pausing the player...")
+                player.pause()
+                return "Pausando la música."
+        elif "continúa" in text or "resume" in text:
+            if player:
+                logging.info("Resuming the player...")
+                player.play()
+                return "Reanudando la música."
+        elif "para" in text or "detén" in text:
+            if player:
+                logging.info("Stopping the player...")
+                player.stop()
+                return "Deteniendo la música."
+
         for key, response in self.responses.items():
             if key in text:
                 if response in self.function_map:
-                    return self.function_map[response]()
+                    result = self.function_map[response]([text.replace(key, ""), self.server_comm])
+                    if isinstance(result, AudioPlayer):
+                        player = result
+                    return "De acuerdo, reproduciendo la canción."
                 return response
 
         logging.info(f"Calling Gemini AI with text: {text}")
