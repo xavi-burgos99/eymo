@@ -21,8 +21,58 @@ def get_help():
     return "No te quiero ayudar. Me caes mal."
 
 
+<<<<<<< Updated upstream
 function_mapping = {
     "get_help": get_help
+=======
+def play_song(args):
+    song_name, server_comm = args[0], args[1]
+    response = server_comm.call_server("music", {"song_name": song_name}).get("response")
+    song_url = response.get('result')
+    logging.info(f"Song URL: {song_url}")
+
+    logging.info("Creating audio player...")
+    player = AudioPlayer(song_url)
+    logging.info("Starting audio player...")
+    playback_thread = threading.Thread(target=player.play)
+    logging.info("Starting playback thread...")
+    playback_thread.start()
+    logging.info("Playback thread started.")
+    return player
+
+
+reminders = []
+
+def set_reminder(args):
+    reminder_info = args[0].strip()
+    logging.info(f"Reminder info: {reminder_info}")
+    time_to_remind = args[1]  # Define la lógica para extraer la hora/momento desde el texto o proporciona directamente
+    logging.info(f"Time to remind: {time_to_remind}")
+    reminders.append((reminder_info, time_to_remind))
+    logging.info(f"Recordatorio añadido: '{reminder_info}' para {time_to_remind}")
+    return f"Recordaré {reminder_info}."
+
+def check_reminders():
+    while True:
+        current_time = time.time()
+        for reminder in reminders:
+            info, remind_at = reminder
+            if current_time >= remind_at:
+                logging.info(f"Recordatorio activado: {info}")
+                player.speaker.say(f"Recordatorio: {info}")
+                player.speaker.runAndWait()
+                reminders.remove(reminder)
+        time.sleep(60)
+
+reminder_thread = threading.Thread(target=check_reminders)
+reminder_thread.start()
+
+
+function_mapping = {
+    "get_help": get_help,
+    "play_song": play_song,
+    "set_reminder": set_reminder
+>>>>>>> Stashed changes
 }
 
 
@@ -46,6 +96,44 @@ class VoiceAssistant:
         self.function_map = function_mapping
 
     def respond(self, text):
+<<<<<<< Updated upstream
+=======
+        global player
+
+        # Verifica si es una solicitud para establecer un recordatorio
+        if "recuerda" in text:
+            logging.info("Setting a reminder...")
+            reminder_text = text.split("recuerda", 1)[1].strip()
+
+            # Implementa aquí la lógica para identificar la hora o momento del recordatorio
+            # Ejemplo simplificado: asumiendo el formato "en <X minutos>"
+            match = re.search(r'en (\d+) minutos?', reminder_text)
+            logging.info(f"Match: {match}")
+            if match:
+                minutes = int(match.group(1))
+                logging.info(f"Setting reminder in {minutes} minutes...")
+                remind_at = time.time() + (minutes * 60)
+                logging.info(f"Reminder time: {remind_at}") 
+                return self.function_map["set_reminder"]([reminder_text, remind_at])
+            return "No se ha podido establecer el recordatorio. Por favor, usa el formato 'recuerda en <X minutos>'."
+
+        if "pausa" in text:
+            if player:
+                logging.info("Pausing the player...")
+                player.pause()
+                return "Pausando la música."
+        elif "continúa" in text or "resume" in text:
+            if player:
+                logging.info("Resuming the player...")
+                player.play()
+                return "Reanudando la música."
+        elif "para" in text or "detén" in text:
+            if player:
+                logging.info("Stopping the player...")
+                player.stop()
+                return "Deteniendo la música."
+
+>>>>>>> Stashed changes
         for key, response in self.responses.items():
             if key in text:
                 if response in self.function_map:
