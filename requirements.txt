@@ -45,7 +45,7 @@ httpcore~=1.0.5
 Pygments~=2.17.2
 idna~=3.7
 certifi~=2024.2.2
-pywin32~=306
+pywin32
 matplotlib~=3.8.3
 overrides~=7.7.0
 scipy~=1.12.0
@@ -108,3 +108,8 @@ prometheus_client~=0.20.0
 jupyter_server_terminals~=0.5.3
 docstring_parser~=0.16
 json5~=0.9.25
+piped-api==1.0.1b0
+google-api-python-client==2.128.0
+google-auth-httplib2==0.2.0
+httplib2==0.22.0
+uritemplate==4.1.1

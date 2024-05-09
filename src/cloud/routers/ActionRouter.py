@@ -22,8 +22,8 @@ async def perform_action(request: ActionRequest):
             ActionClass = getattr(module, actionName)
             action_instances_cache[actionName] = ActionClass()
         return action_instances_cache[actionName].handle(request.parameters)
-    except ImportError:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Action '{request.action}' not found")
+    except ImportError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Action '{request.action}' not found with error: {e}")
     except AssertionError as err:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err))
     except Exception as e:

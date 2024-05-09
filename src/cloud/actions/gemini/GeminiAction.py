@@ -45,7 +45,7 @@ class GeminiAction(BaseAction, ABC):
         if self.chat is None or parameters['reset']:
             self.chat = self.model.start_chat()  
 
-        result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME], parameters[self.IMAGE_PARAM_NAME])
+        result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME], image)
         result_base64 = text_to_speech(result)
 
         return super().response_json('gemini', result_base64)
