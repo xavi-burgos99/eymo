@@ -24,19 +24,11 @@ def get_help(args):
     return "No te quiero ayudar. Me caes mal."
 
 
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-function_mapping = {
-    "get_help": get_help
-=======
-=======
->>>>>>> 1a525e80597baa0f2953679f045dfcf58a328b4a
 def play_song(args):
     song_name, server_comm = args[0], args[1]
     response = server_comm.call_server("music", {"song_name": song_name}).get("response")
     song_url = response.get('result')
     logging.info(f"Song URL: {song_url}")
-<<<<<<< HEAD
 
     logging.info("Creating audio player...")
     player = AudioPlayer(song_url)
@@ -79,24 +71,6 @@ function_mapping = {
     "get_help": get_help,
     "play_song": play_song,
     "set_reminder": set_reminder
->>>>>>> Stashed changes
-}
-=======
->>>>>>> 1a525e80597baa0f2953679f045dfcf58a328b4a
-
-    logging.info("Creating audio player...")
-    player = AudioPlayer(song_url)
-    logging.info("Starting audio player...")
-    playback_thread = threading.Thread(target=player.play)
-    logging.info("Starting playback thread...")
-    playback_thread.start()
-    logging.info("Playback thread started.")
-    return player
-
-
-function_mapping = {
-    "get_help": get_help,
-    "play_song": play_song
 }
 
 class VoiceAssistant:
@@ -119,9 +93,6 @@ class VoiceAssistant:
         self.function_map = function_mapping
 
     def respond(self, text):
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-=======
         global player
 
         # Verifica si es una solicitud para establecer un recordatorio
@@ -141,10 +112,6 @@ class VoiceAssistant:
                 return self.function_map["set_reminder"]([reminder_text, remind_at])
             return "No se ha podido establecer el recordatorio. Por favor, usa el formato 'recuerda en <X minutos>'."
 
-=======
-        global player
-
->>>>>>> 1a525e80597baa0f2953679f045dfcf58a328b4a
         if "pausa" in text:
             if player:
                 logging.info("Pausing the player...")
@@ -161,10 +128,6 @@ class VoiceAssistant:
                 player.stop()
                 return "Deteniendo la música."
 
-<<<<<<< HEAD
->>>>>>> Stashed changes
-=======
->>>>>>> 1a525e80597baa0f2953679f045dfcf58a328b4a
         for key, response in self.responses.items():
             if key in text:
                 if response in self.function_map:
