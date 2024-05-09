@@ -5,7 +5,7 @@ import logging
 
 from requests import RequestException
 
-from src.rpi.services.models.server_input import ServerIn
+from services.models.server_input import ServerIn
 
 
 class ServerCommunication:

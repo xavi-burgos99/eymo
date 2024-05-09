@@ -1,12 +1,12 @@
 import logging
 
-from rpi.controllers.camera_controller import CameraController
-from src.rpi.services.voice_assistant import VoiceAssistant
-from src.rpi.controllers.arduino_controller import ArduinoController
-from src.rpi.controllers.screen_controller import ScreenController
-from src.rpi.services.server_communication import ServerCommunication
-from src.rpi.utils.network_utils import check_network_connection
-from src.rpi.configs.system_config import load_system_configurations
+from controllers.camera_controller import CameraController
+from services.voice_assistant import VoiceAssistant
+from controllers.arduino_controller import ArduinoController
+from controllers.screen_controller import ScreenController
+from services.server_communication import ServerCommunication
+from utils.network_utils import check_network_connection
+from configs.system_config import load_system_configurations
 
 
 def setup_logging() -> None:

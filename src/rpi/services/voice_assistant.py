@@ -8,8 +8,11 @@ import speech_recognition as sr
 import threading
 import logging
 
-from rpi.services.server_communication import ServerCommunication
+from services.server_communication import ServerCommunication
+from services.models.audio_player import AudioPlayer
 
+
+player = None
 
 def load_responses(filepath):
     with open(filepath, 'r', encoding='utf-8') as file:
@@ -17,19 +20,23 @@ def load_responses(filepath):
     return data['responses']
 
 
-def get_help():
+def get_help(args):
     return "No te quiero ayudar. Me caes mal."
 
 
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 function_mapping = {
     "get_help": get_help
 =======
+=======
+>>>>>>> 1a525e80597baa0f2953679f045dfcf58a328b4a
 def play_song(args):
     song_name, server_comm = args[0], args[1]
     response = server_comm.call_server("music", {"song_name": song_name}).get("response")
     song_url = response.get('result')
     logging.info(f"Song URL: {song_url}")
+<<<<<<< HEAD
 
     logging.info("Creating audio player...")
     player = AudioPlayer(song_url)
@@ -74,7 +81,23 @@ function_mapping = {
     "set_reminder": set_reminder
 >>>>>>> Stashed changes
 }
+=======
+>>>>>>> 1a525e80597baa0f2953679f045dfcf58a328b4a
 
+    logging.info("Creating audio player...")
+    player = AudioPlayer(song_url)
+    logging.info("Starting audio player...")
+    playback_thread = threading.Thread(target=player.play)
+    logging.info("Starting playback thread...")
+    playback_thread.start()
+    logging.info("Playback thread started.")
+    return player
+
+
+function_mapping = {
+    "get_help": get_help,
+    "play_song": play_song
+}
 
 class VoiceAssistant:
     def __init__(self, config: dict, server_communication: ServerCommunication):
@@ -96,6 +119,7 @@ class VoiceAssistant:
         self.function_map = function_mapping
 
     def respond(self, text):
+<<<<<<< HEAD
 <<<<<<< Updated upstream
 =======
         global player
@@ -117,6 +141,10 @@ class VoiceAssistant:
                 return self.function_map["set_reminder"]([reminder_text, remind_at])
             return "No se ha podido establecer el recordatorio. Por favor, usa el formato 'recuerda en <X minutos>'."
 
+=======
+        global player
+
+>>>>>>> 1a525e80597baa0f2953679f045dfcf58a328b4a
         if "pausa" in text:
             if player:
                 logging.info("Pausing the player...")
@@ -133,11 +161,17 @@ class VoiceAssistant:
                 player.stop()
                 return "Deteniendo la música."
 
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> 1a525e80597baa0f2953679f045dfcf58a328b4a
         for key, response in self.responses.items():
             if key in text:
                 if response in self.function_map:
-                    return self.function_map[response]()
+                    result = self.function_map[response]([text.replace(key, ""), self.server_comm])
+                    if isinstance(result, AudioPlayer):
+                        player = result
+                    return "De acuerdo, reproduciendo la canción."
                 return response
 
         logging.info(f"Calling Gemini AI with text: {text}")
