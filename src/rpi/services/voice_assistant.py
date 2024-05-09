@@ -17,12 +17,18 @@ def load_responses(filepath):
     return data['responses']
 
 
-def get_help():
+def get_help(args):
     return "No te quiero ayudar. Me caes mal."
 
 
+def play_song(args):
+    song_name, server_comm = args[0], args[1]
+    return server_comm.call_server("music", {"song_name": song_name})
+
+
 function_mapping = {
-    "get_help": get_help
+    "get_help": get_help,
+    "play_song": play_song
 }
 
 
@@ -49,7 +55,7 @@ class VoiceAssistant:
         for key, response in self.responses.items():
             if key in text:
                 if response in self.function_map:
-                    return self.function_map[response]()
+                    return self.function_map[response]([text.replace(key, ""), self.server_comm])
                 return response
 
         logging.info(f"Calling Gemini AI with text: {text}")
