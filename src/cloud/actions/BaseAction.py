@@ -9,7 +9,7 @@ class BaseAction:
     def parameter_must_be_sent(self, parameter_name: str):
         return "Parameter '{}' must be sent".format(parameter_name)
 
-    def response_json(self, action, result: str) -> dict:
+    def response_json(self, action, result: str | dict) -> dict:
         if result is None:
             status = "404 NOT FOUND"
         elif result == "":
