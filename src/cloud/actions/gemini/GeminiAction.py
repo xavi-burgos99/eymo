@@ -42,7 +42,7 @@ class GeminiAction(BaseAction, ABC):
         if parameters.get(self.IMAGE_PARAM_NAME):
             image = parameters[self.IMAGE_PARAM_NAME]
 
-        if self.chat is None or parameters['reset']:
+        if self.chat is None or parameters.get('reset'):
             self.chat = self.model.start_chat()  
 
         result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME], image)
