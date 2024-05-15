@@ -1,3 +1,4 @@
+import base64
 import logging
 import threading
 
@@ -14,7 +15,10 @@ class CameraController:
         if not result:
             logging.error("Could not read camera image.", exc_info=True)
             return None
-        return image
+
+        retval, buffer = cv2.imencode('.png', image)
+        png_as_text = base64.b64encode(buffer)
+        return png_as_text
 
     def record_video(self, duration):
         threading.Thread(target=self._record_video, args=(duration,)).start()
