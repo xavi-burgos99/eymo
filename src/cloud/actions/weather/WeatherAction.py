@@ -27,7 +27,7 @@ class WeatherAction(BaseAction, ABC):
     def handle(self, parameters: dict):
         print("WeatherAction")
         #assert self.WEATHER_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.WEATHER_PARAM_NAME)
-        
+
         current_conditions = self.weather_api.get_current_conditions(self.LOCATION_KEY)
         forecast = self.weather_api.get_forecast(self.LOCATION_KEY)
 
