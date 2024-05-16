@@ -90,7 +90,8 @@ class VoiceAssistant:
         logging.info(f"Song URL: {song_url}")
 
         logging.info("Creating audio player...")
-        self.player = AudioPlayer(song_url)
+        self.player = AudioPlayer()
+        self.player.add_to_playlist(song_url)
         logging.info("Starting audio player...")
         playback_thread = threading.Thread(target=self.player.play)
         logging.info("Starting playback thread...")
@@ -116,6 +117,11 @@ class VoiceAssistant:
                 logging.info("Stopping the player...")
                 self.player.stop()
                 return "Deteniendo la música."
+        elif command == "next":
+            if self.player:
+                logging.info("Playing the next song...")
+                self.player.next()
+                return "Reproduciendo la siguiente canción."
         else:
             return "No se ha podido controlar la música. Por favor, intenta de nuevo."
 
