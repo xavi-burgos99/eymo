@@ -82,3 +82,6 @@ class AudioPlayer:
 
         if self.current_index < len(self.playlist):
             self.playlist.pop(self.current_index)
+
+    def get_playlist(self):
+        return self.playlist
