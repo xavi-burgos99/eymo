@@ -1,12 +1,14 @@
 // Important Libraries
-#include <Wire.h>
 #include <Arduino.h>
+#include <SoftwareSerial.h>
+
+// Master-Slave Communication Pins
+#define PIN_RX 2  // Pin de recepción de datos (conectado al pin TX de la Raspberry Pi)
+#define PIN_TX 3  // Pin de transmisión de datos (conectado al pin RX de la Raspberry Pi)
 
 // UltraSonic Pins
-#define US1Echo 2
-#define US1Trig 3
-#define US2Echo 4
-#define US2Trig 5
+#define USEcho 2
+#define USTrig 3
 
 // IR Pins
 #define IREcho A0
@@ -22,3 +24,6 @@
 
 // Motor Control Module
 #include "MotorControlModule/MotorControlModule.hpp"
+
+// Servo Movement Module
+#include "ServoMovementModule/ServoMovementModule.hpp"

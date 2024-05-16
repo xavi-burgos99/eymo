@@ -1,12 +1,16 @@
 #include <Arduino.h>
 #include "../utilities.hpp"
-#include <Wire.h>
+
+/**
+ * @brief 
+ * Angulos de 30º hacia un lado y hacia el otro
+ * 
+ */
 
 class ServoMovementModule {
 public:
 	ServoMovementModule();
-	bool head_movement(int angle); // angle: -1 = left, 0 = straigth on, 1 = right
+	bool head_movement(int direction); // direction: -1 = left == -30º, 0 = straigth on, 1 = right == 30º
 private:
-	int;
-	int;
+	int _angle=0;
 };

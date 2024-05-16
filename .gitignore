@@ -1,4 +1,7 @@
 **/**/.vscode/
 **/**/.vs/
 .vscode
+**/**/.idea/
+.idea
+
 .DS_Store

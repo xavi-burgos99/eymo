@@ -12,42 +12,38 @@ enum SensorState {
 
 class ObstacleDetectionModule{
     public:
-        SensorState IRState, FrontState, BackState;
+        SensorState IRState, BackState;
     private:
         // Sensor pins
-        int _pinIR, _FrontEcho, _FrontTrig, _BackEcho, _BackTrig;
+        int _pinIR, _BackEcho, _BackTrig;
         // Front sensors
-        float _FrontDistance, IRDistance;
+        float IRDistance;
 
         // Back sensors
         float _BackDistance;
 
-        ObstacleDetectionModule(int pinIR, int FrontEcho, int FrontTrig, int BackEcho, int BackTrig);
+        ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig);
         void update();
 		float readInfrared(int pin);
 		float UltraSonicMetrics(int trigger, int echo);
 
 };
 
-ObstacleDetectionModule::ObstacleDetectionModule(int pinIR, int FrontEcho, int FrontTrig, int BackEcho, int BackTrig) {
+ObstacleDetectionModule::ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig) {
 
     _pinIR = pinIR;
-    _FrontEcho = FrontEcho;
-    _FrontTrig = FrontTrig;
     _BackEcho = BackEcho;
     _BackTrig = BackTrig;
 
     IRDistance = 0.0f;
-    _FrontDistance = 0.0f;
+
     _BackDistance = 0.0f;
     IRState = Initiating;
-    FrontState = Initiating;
     BackState = Initiating;
 }
 
 void ObstacleDetectionModule::update() {
     IRDistance = readInfrared(_pinIR);
-    _FrontDistance = UltraSonicMetrics(_FrontTrig, _FrontEcho);
     _BackDistance = UltraSonicMetrics(_BackTrig, _BackEcho);
 
     if (IRDistance < 10) {
@@ -61,19 +57,6 @@ void ObstacleDetectionModule::update() {
     }
     else {
         IRState = Safe;
-    }
-
-    if (_FrontDistance < 10) {
-        FrontState = Dangerous;
-    }
-    else if (_FrontDistance < 20) {
-        FrontState = Warning;
-    }
-    else if (_FrontDistance < 30) {
-        FrontState = Close;
-    }
-    else {
-        FrontState = Safe;
     }
 
     if (_BackDistance < 10) {
