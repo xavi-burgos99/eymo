@@ -1,6 +1,5 @@
 import base64
 import pygame
-import time
 import tempfile
 import os
 import logging

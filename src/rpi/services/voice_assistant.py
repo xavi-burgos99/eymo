@@ -2,7 +2,6 @@ import time
 import re
 import json
 
-import pyttsx3 as tts
 import speech_recognition as sr
 
 import threading
@@ -24,10 +23,6 @@ class VoiceAssistant:
     def __init__(self, config: dict, server_communication: ServerCommunication):
         self.recognizer = sr.Recognizer()
         self.server_comm = server_communication
-
-        #self.speaker = tts.init()
-        #self.speaker.setProperty("voice", config["voice_id"])
-        #self.speaker.setProperty("rate", config["rate"])
 
         self.speaker = Speaker()
 
@@ -56,12 +51,10 @@ class VoiceAssistant:
             self.player.pause()
             time.sleep(1)
             self.speaker.play(text)
-            # self.speaker.runAndWait()
             time.sleep(1)
             self.player.play()
         else:
             self.speaker.play(text)
-            # self.speaker.runAndWait()
 
     def get_help(self, args):
         return "No te quiero ayudar. Me caes mal."
@@ -154,6 +147,21 @@ class VoiceAssistant:
 
             if result and result.get('function_name') == 'control_music':
                 return self.control_music(result.get('function_args'))
+            time.sleep(1)  # To avoid overloading responses
+
+        if self.speaker.is_playing:
+            logging.info("Handling playback...")
+            response = self.server_comm.call_server("handleplayback", {"prompt": text})
+            logging.info(f"Playback response: {response}")
+            result = response.get('response').get('result')
+            logging.info(f"Playback result: {result}")
+
+            try:
+                if result and result.get('function_name') == 'control_music':
+                    if result.get('function_args').get('command') == 'stop':
+                        self.speaker.stop()
+            except Exception as e:
+                logging.error(f"Error handling speaker: {e}")
             time.sleep(1)  # To avoid overloading responses
 
         for key, response in self.responses.items():
