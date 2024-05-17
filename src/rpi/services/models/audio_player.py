@@ -85,3 +85,7 @@ class AudioPlayer:
 
     def get_playlist(self):
         return self.playlist
+
+    def set_volume(self, volume):
+        self.player.audio_set_volume(volume)
+        logging.info(f"[PLAYER] Volume set to {volume}")

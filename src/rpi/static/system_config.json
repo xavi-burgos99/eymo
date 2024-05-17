@@ -6,15 +6,15 @@
 
   },
   "server": {
-    "host": "https://34.163.75.171:7125",
+    "host": "https://34.163.33.56:7125",
     "endpoint": "action/perform"
   },
   "voice": {
     "voice_id": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Speech\\Voices\\Tokens\\TTS_MS_ES-ES_HELENA_11.0",
     "rate": 150,
 
-    "pattern": "^(oye|ola|hola|eymo|eimo|heimo|heymo)\\s+(eymo|eimo|heimo|heymo)\\b",
-    "threshold_duration": 0.4,
+    "pattern": "((oye|ola|hola)\\s+(eymo|eimo|heimo|heymo)\\b)|^(eimo|eymo|heimo|heymo)",
+    "threshold_duration": 0.5,
     "activated_timeout": 30
   },
   "camera": {
