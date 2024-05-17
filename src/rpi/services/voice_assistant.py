@@ -48,7 +48,7 @@ class VoiceAssistant:
 
     def speak(self, text):
         if self.player and self.player.is_playing:
-            self.player.set_volume(60)
+            self.player.set_volume(40)
             time.sleep(1)
             audio_length = self.speaker.play(text)
             time.sleep(audio_length)
@@ -84,7 +84,6 @@ class VoiceAssistant:
         return self.server_comm.call_server("gemini", {
             "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que recuerdes {reminder_info}. Responde de acuerdo con esto, un poco indignado porque estas harto de trabajar como un esclavo.",
             "reset": True}).get("response").get("result")
-        # return f"Recordaré {reminder_info}."
 
     def play_song(self, args):
         song_name = args
@@ -113,7 +112,9 @@ class VoiceAssistant:
                     "prompt": "Eres un asistente de voz, llamado EYMO. Te han pedido que pauses la cancion que estaba sonando. Responde de acuerdo con esto.",
                     "reset": True}).get("response").get("result")
         elif command == "play":
-            if self.player:
+            if args.get('song_name'):
+                return self.play_song(args.get('song_name'))
+            elif self.player:
                 logging.info("[CONTROL_MUSIC] Resuming the player...")
                 self.player.play()
                 return self.server_comm.call_server("gemini", {
@@ -225,10 +226,10 @@ class VoiceAssistant:
                 audio = self.recognizer.listen(mic, None)
                 text = self.recognize_speech(audio)
                 if text:
-                    if self.player.is_playing:
-                        self.player.set_volume(60)
                     match = re.match(self.pattern, text, re.IGNORECASE)
                     if match:
+                        if self.player.is_playing:
+                            self.player.set_volume(40)
                         after_pattern = text[match.end():].strip()
                         logging.info(f"After pattern: {after_pattern}")
                         self.activate_assistant(mic, after_pattern)
@@ -273,7 +274,7 @@ class VoiceAssistant:
                 break
             elif text:
                 if self.player.is_playing:
-                    self.player.set_volume(60)
+                    self.player.set_volume(40)
                 response = self.respond(text)
                 if response:
                     self.speak(response)
