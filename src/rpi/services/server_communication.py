@@ -1,3 +1,4 @@
+import time
 from typing import Any
 
 import requests
@@ -25,15 +26,21 @@ class ServerCommunication:
         serverIn.parameters = params
 
         logging.info(f"Calling server {self.host}/{self.endpoint} with {serverIn.__dict__}...")
-        try:
-            response = requests.get(f"{self.host}/{self.endpoint}", json=serverIn.__dict__, headers={'Content-Type': 'application/json'}, verify=False)
-        except RequestException:
-            logging.error("Failed to connect to the server. Please check the server configurations.")
-            return "Ha habido un problema de conexion con el servidor. Por favor, intenta de nuevo."
+        for attempt in range(3):
+            try:
+                response = requests.get(f"{self.host}/{self.endpoint}",
+                                        json=serverIn.__dict__,
+                                        headers={'Content-Type': 'application/json'},
+                                        verify=False)
+            except RequestException:
+                logging.error("Failed to connect to the server. Please check the server configurations.")
 
-        logging.info(f"Server response: {response}")
-        if response.status_code != 200:
-            logging.error(f"Failed to call server. Status code: {response.status_code}. Reason: {response.reason}")
-            return "Ha habido un problema de conexion con el servidor. Por favor, intenta de nuevo."
+            logging.info(f"Server response: {response}")
+            if response.status_code == 200:
+                return response.json()
+            else:
+                logging.error(f"Failed to call server. Status code: {response.status_code}. Reason: {response.reason}")
+                logging.info(f"Retrying... ({attempt + 1}/{3})")
+                time.sleep(1)
 
-        return response.json()
+        return "Ha habido un problema de conexion con el servidor. Por favor, intenta de nuevo."

@@ -6,7 +6,7 @@
 
   },
   "server": {
-    "host": "https://34.163.84.72:7125",
+    "host": "https://34.163.75.171:7125",
     "endpoint": "action/perform"
   },
   "voice": {

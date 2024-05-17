@@ -31,7 +31,7 @@ class AudioPlayer:
 
         if self.paused:
             logging.info("[PLAYER] Resuming playback")
-            self.player.play()
+            self.player.pause()
         else:
             logging.info("[PLAYER] Starting playback")
             self.current_index = 0
