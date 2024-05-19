@@ -1,15 +1,15 @@
 import time
 import re
 import json
-
-import speech_recognition as sr
-
 import threading
 import logging
 
+import speech_recognition as sr
+
+from datetime import datetime
+
 from services.server_communication import ServerCommunication
 from services.models.audio_player import AudioPlayer
-
 from services.models.speaker import Speaker
 
 
@@ -36,7 +36,6 @@ class VoiceAssistant:
 
         self.function_map = {
             "get_help": self.get_help,
-            "play_song": self.play_song,
             "set_reminder": self.set_reminder
         }
 
@@ -61,28 +60,42 @@ class VoiceAssistant:
 
     def check_reminders(self):
         while True:
-            current_time = time.time()
+            now = datetime.now()
+            current_date = now.date()
+            current_time = now.time()
+
             for reminder in self.reminders:
-                info, remind_at = reminder
-                if current_time >= remind_at:
-                    logging.info(f"Recordatorio activado: {info}")
-
-                    # TODO: Implementar la lógica para recordar al usuario sobre el recordatorio por voz
-                    # player.speaker.say(f"Recordatorio: {info}")
-                    # player.speaker.runAndWait()
-
-                    self.reminders.remove(reminder)
-            time.sleep(60)
+                if reminder.get('date') == current_date:
+                    logging.info(f"Reminder: {reminder.get('reminder')} is due today but at {reminder.get('time')}, now it's {current_time}.")
+                    if reminder.get('time') <= current_time:
+                        logging.info(f"Reminder: {reminder['reminder']} is due now!")
+                        self.speak(self.server_comm.call_server("gemini", {
+                            "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que recuerdes {reminder.get("reminder")}, y justo ahora es el momento de recordarlo. Responde de acuerdo con esto, un poco indignado porque estas harto de trabajar como un esclavo.",
+                            "reset": True}).get("response").get("result"))
+                        self.reminders.remove(reminder)
+                    continue
+                logging.info(f"Reminder: {reminder.get('reminder')} is not due yet on today.")
+            time.sleep(30)
 
     def set_reminder(self, args):
-        reminder_info = args.get('reminder_text').strip()
-        logging.info(f"Reminder info: {reminder_info}")
-        time_to_remind = args.get('remind_at')
-        logging.info(f"Time to remind: {time_to_remind}")
-        self.reminders.append((reminder_info, time_to_remind))
-        logging.info(f"Recordatorio añadido: '{reminder_info}' para {time_to_remind}")
+        reminder = args.get('reminder')
+
+        date = datetime.today().date()
+        try:
+            date = datetime.strptime(args.get('date'), '%Y-%m-%d').date()
+        except Exception:
+            logging.warning("Invalid date format. Please use YYYY-MM-DD.")
+
+        time = datetime.now().time()
+        try:
+            time = datetime.strptime(args.get('time'), '%H:%M').time()
+        except Exception:
+            logging.warning("Invalid time format. Please use HH:MM:SS.")
+        logging.info(f"Reminder: {reminder} at {date} {time}")
+        self.reminders.append({'reminder': reminder, 'date': date, 'time': time})
+        logging.info(f"Recordatorio añadido: '{reminder}' para {date} a las {time}")
         return self.server_comm.call_server("gemini", {
-            "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que recuerdes {reminder_info}. Responde de acuerdo con esto, un poco indignado porque estas harto de trabajar como un esclavo.",
+            "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que le recuerdes al usuario que tiene que hacer {reminder}, el lo tiene que hacer. Responde de acuerdo con esto, un poco indignado porque estas harto de trabajar como un esclavo.",
             "reset": True}).get("response").get("result")
 
     def play_song(self, args):
@@ -105,7 +118,9 @@ class VoiceAssistant:
     def control_music(self, args):
         command = args.get('command')
         if command == "pause":
-            if self.player:
+            if self.speaker.is_playing:
+                self.speaker.stop()
+            if self.player and (self.player.is_playing or self.player.paused):
                 logging.info("[CONTROL_MUSIC] Pausing the player...")
                 self.player.pause()
                 return self.server_comm.call_server("gemini", {
@@ -121,12 +136,15 @@ class VoiceAssistant:
                     "prompt": "Eres un asistente de voz, llamado EYMO. Te han pedido que reanudes cancion que estaba sonando. Responde de acuerdo con esto.",
                     "reset": True}).get("response").get("result")
         elif command == "stop":
+            if self.speaker.is_playing:
+                self.speaker.stop()
             if self.player:
                 logging.info("[CONTROL_MUSIC] Stopping the player...")
                 self.player.stop()
                 return self.server_comm.call_server("gemini", {
-                    "prompt": "Eres un asistente de voz, llamado EYMO. Te han pedido que detengas la cancion que estaba sonando. Responde de acuerdo con esto.",
+                    "prompt": "Eres un asistente de voz, llamado EYMO. Te han pedido que detengas por completo la cancion que estaba sonando. Responde de acuerdo con esto.",
                     "reset": True}).get("response").get("result")
+            self.speaker.update_playing_status()
         elif command == "next":
             if self.player:
                 logging.info("[CONTROL_MUSIC] Playing the next song...")
@@ -139,52 +157,20 @@ class VoiceAssistant:
             return "No se ha podido controlar la música. Por favor, intenta de nuevo."
 
     def respond(self, text):
-        # TODO: Implementar la lógica para establecer recordatorios segun Gemini AI Functions.
-        if "recuerda" in text:
-            logging.info("Setting a reminder...")
-            reminder_text = text.split("recuerda", 1)[1].strip()
-            match = re.search(r'en (\d+) minutos?', reminder_text)
-            logging.info(f"Match: {match}")
-            if match:
-                minutes = int(match.group(1))
-                logging.info(f"Setting reminder in {minutes} minutes...")
-                remind_at = time.time() + (minutes * 60)
-                logging.info(f"Reminder time: {remind_at}")
-
-                request = dict()
-                request["reminder_text"] = reminder_text
-                request["remind_at"] = remind_at
-                return self.function_map["set_reminder"](request)
-            return "No se ha podido establecer el recordatorio. Por favor, usa el formato 'recuerda en X minutos'."
-
-        if self.player and (self.player.is_playing or self.player.paused):
-            logging.info("Handling playback...")
-            response = self.server_comm.call_server("functional", {"prompt": text})
-            logging.info(f"Playback response: {response}")
-            result = response.get('response').get('result')
-            logging.info(f"Playback result: {result}")
-
-            if result and result.get('function_name') == 'control_music':
+        # Step 1: Check for functional commands
+        logging.info("Handling playback...")
+        response = self.server_comm.call_server("functional", {"prompt": text})
+        logging.info(f"Playback response: {response}")
+        result = response.get('response').get('result')
+        logging.info(f"Playback result: {result}")
+        if result:
+            if result.get('function_name') == 'control_music':
                 return self.control_music(result.get('function_args'))
-            time.sleep(1)  # To avoid overloading responses
+            elif result.get('function_name') == 'set_reminder':
+                return self.set_reminder(result.get('function_args'))
+        time.sleep(1)
 
-        self.speaker.update_playing_status()
-        if self.speaker.is_playing:
-            logging.info("Handling playback...")
-            response = self.server_comm.call_server("functional", {"prompt": text})
-            try:
-                logging.info(f"Playback response: {response}")
-                result = response.get('response').get('result')
-                logging.info(f"Playback result: {result}")
-
-                if result and result.get('function_name') == 'control_music':
-                    if result.get('function_args').get('command') == 'stop':
-                        self.speaker.stop()
-                    return
-            except Exception as e:
-                logging.error(f"Error handling speaker: {e}")
-            time.sleep(1)  # To avoid overloading responses
-
+        # Step 2: Check for responses in the intents.json file
         for key, response in self.responses.items():
             if key in text:
                 if response in self.function_map:
@@ -193,6 +179,7 @@ class VoiceAssistant:
                         return result
                 return response
 
+        # Step 3: Call Gemini AI otherwise
         logging.info(f"Calling Gemini AI with text: {text}")
         try:
             response = self.server_comm.call_server("gemini", {"prompt": text}).get("response").get("result")
