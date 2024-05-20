@@ -33,11 +33,11 @@ def initialize_components() -> tuple[ArduinoController, ScreenController, Server
     logging.info("Starting server communication service...")
     server_comm = ServerCommunication(config['server'])
 
-    logging.info("Launching the voice assistant service...")
-    voice_assistant = VoiceAssistant(config['voice'], server_comm)
-
     logging.info("Setting up camera controller service...")
     camera_controller = CameraController(config['camera'])
+
+    logging.info("Launching the voice assistant service...")
+    voice_assistant = VoiceAssistant(config['voice'], server_comm, camera_controller)
 
     return arduino, screen, server_comm, voice_assistant, camera_controller
 

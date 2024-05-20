@@ -12,12 +12,13 @@ class CameraController:
 
     def get_frame(self) -> None or np.ndarray:
         result, image = self.cam.read()
+        logging.info("Reading camera image...")
         if not result:
             logging.error("Could not read camera image.", exc_info=True)
             return None
 
         retval, buffer = cv2.imencode('.png', image)
-        png_as_text = base64.b64encode(buffer)
+        png_as_text = base64.b64encode(buffer).decode('utf-8')
         return png_as_text
 
     def record_video(self, duration):

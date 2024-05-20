@@ -12,6 +12,8 @@ from services.server_communication import ServerCommunication
 from services.models.audio_player import AudioPlayer
 from services.models.speaker import Speaker
 
+from rpi.controllers.camera_controller import CameraController
+
 
 def load_responses(filepath):
     with open(filepath, 'r', encoding='utf-8') as file:
@@ -20,9 +22,10 @@ def load_responses(filepath):
 
 
 class VoiceAssistant:
-    def __init__(self, config: dict, server_communication: ServerCommunication):
+    def __init__(self, config: dict, server_communication: ServerCommunication, camera_controller: CameraController = None):
         self.recognizer = sr.Recognizer()
         self.server_comm = server_communication
+        self.camera_controller = camera_controller
 
         self.speaker = Speaker()
 
@@ -36,7 +39,8 @@ class VoiceAssistant:
 
         self.function_map = {
             "get_help": self.get_help,
-            "set_reminder": self.set_reminder
+            "set_reminder": self.set_reminder,
+            "get_image_details": self.get_image_details,
         }
 
         self.player = AudioPlayer()
@@ -69,8 +73,9 @@ class VoiceAssistant:
                     logging.info(f"Reminder: {reminder.get('reminder')} is due today but at {reminder.get('time')}, now it's {current_time}.")
                     if reminder.get('time') <= current_time:
                         logging.info(f"Reminder: {reminder['reminder']} is due now!")
+                        reminder_info = reminder.get("reminder")
                         self.speak(self.server_comm.call_server("gemini", {
-                            "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que recuerdes {reminder.get("reminder")}, y justo ahora es el momento de recordarlo. Responde de acuerdo con esto, un poco indignado porque estas harto de trabajar como un esclavo.",
+                            "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que recuerdes {reminder_info}, y justo ahora es el momento de recordarlo. Responde de acuerdo con esto, un poco indignado porque estas harto de trabajar como un esclavo.",
                             "reset": True}).get("response").get("result"))
                         self.reminders.remove(reminder)
                     continue
@@ -155,6 +160,13 @@ class VoiceAssistant:
         else:
             logging.warning("[CONTROL_MUSIC] Invalid command.")
             return "No se ha podido controlar la música. Por favor, intenta de nuevo."
+
+    def get_image_details(self, prompt: str):
+        # TODO: Get image from camera and send to Gemini AI
+        return self.server_comm.call_server("gemini", {
+            "prompt": prompt,
+            "image": self.camera_controller.get_frame(),
+            "reset": False}).get("response").get("result")
 
     def respond(self, text):
         # Step 1: Check for functional commands
