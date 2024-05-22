@@ -60,7 +60,9 @@ class VoiceAssistant:
             self.speaker.play(text)
 
     def get_help(self, args):
-        return "No te quiero ayudar. Me caes mal."
+        return self.server_comm.call_server("speech", {
+                            "text": "No te quiero ayudar. Me caes mal."
+        }).get("response").get("result")
 
     def check_reminders(self):
         while True:
@@ -74,9 +76,9 @@ class VoiceAssistant:
                     if reminder.get('time') <= current_time:
                         logging.info(f"Reminder: {reminder['reminder']} is due now!")
                         reminder_info = reminder.get("reminder")
-                        self.speak(self.server_comm.call_server("gemini", {
-                            "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que recuerdes {reminder_info}, y justo ahora es el momento de recordarlo. Responde de acuerdo con esto, un poco indignado porque estas harto de trabajar como un esclavo.",
-                            "reset": True}).get("response").get("result"))
+                        self.speak(self.server_comm.call_server("speech", {
+                            "text": f"Te recuerdo que {reminder_info}, mas te vale recordarlo.",
+                        }).get("response").get("result"))
                         self.reminders.remove(reminder)
                     continue
                 logging.info(f"Reminder: {reminder.get('reminder')} is not due yet on today.")
@@ -113,12 +115,12 @@ class VoiceAssistant:
         if not self.player.is_playing:
             logging.info("Playing the song...")
             self.player.play()
-            return self.server_comm.call_server("gemini", {
+            return self.server_comm.call_server("speech", {
                 "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que pongas la cancion {song_name}. Responde de acuerdo con esto, un poco indignado porque no te gusta nada esa cancion.",
                 "reset": True}).get("response").get("result")
-        return self.server_comm.call_server("gemini", {
-            "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que pongas la cancion {song_name} pero hay una sonando ahora mismo y la has agregado a la lista de reproduccion. Responde de acuerdo con esto, un poco indignado porque no te gusta nada esa cancion.",
-            "reset": True}).get("response").get("result")
+        return self.server_comm.call_server("speech", {
+            "text": f"De acuerdo, la agrego a la lista de reproduccion.",
+        }).get("response").get("result")
 
     def control_music(self, args):
         command = args.get('command')
@@ -128,41 +130,42 @@ class VoiceAssistant:
             if self.player and (self.player.is_playing or self.player.paused):
                 logging.info("[CONTROL_MUSIC] Pausing the player...")
                 self.player.pause()
-                return self.server_comm.call_server("gemini", {
-                    "prompt": "Eres un asistente de voz, llamado EYMO. Te han pedido que pauses la cancion que estaba sonando. Responde de acuerdo con esto.",
-                    "reset": True}).get("response").get("result")
+                return self.server_comm.call_server("speech", {
+                    "text": "Vale",
+                }).get("response").get("result")
         elif command == "play":
             if args.get('song_name'):
                 return self.play_song(args.get('song_name'))
             elif self.player:
                 logging.info("[CONTROL_MUSIC] Resuming the player...")
                 self.player.play()
-                return self.server_comm.call_server("gemini", {
-                    "prompt": "Eres un asistente de voz, llamado EYMO. Te han pedido que reanudes cancion que estaba sonando. Responde de acuerdo con esto.",
-                    "reset": True}).get("response").get("result")
+                return self.server_comm.call_server("speech", {
+                    "text": "Vale, la reanudo.",
+                }).get("response").get("result")
         elif command == "stop":
             if self.speaker.is_playing:
                 self.speaker.stop()
             if self.player:
                 logging.info("[CONTROL_MUSIC] Stopping the player...")
                 self.player.stop()
-                return self.server_comm.call_server("gemini", {
-                    "prompt": "Eres un asistente de voz, llamado EYMO. Te han pedido que detengas por completo la cancion que estaba sonando. Responde de acuerdo con esto.",
-                    "reset": True}).get("response").get("result")
+                return self.server_comm.call_server("speech", {
+                    "text": "Vale, la detengo.",
+                }).get("response").get("result")
             self.speaker.update_playing_status()
         elif command == "next":
             if self.player:
                 logging.info("[CONTROL_MUSIC] Playing the next song...")
                 self.player.next()
-                return self.server_comm.call_server("gemini", {
-                    "prompt": "Eres un asistente de voz, llamado EYMO. Te han pedido que reproduzcas la siguiente cancion de la playlist. Responde brevemente de acuerdo con esto.",
-                    "reset": True}).get("response").get("result")
+                return self.server_comm.call_server("speech", {
+                    "text": "Listo, pongo la siguiente cancion.",
+                }).get("response").get("result")
         else:
             logging.warning("[CONTROL_MUSIC] Invalid command.")
-            return "No se ha podido controlar la música. Por favor, intenta de nuevo."
+            return self.server_comm.call_server("speech", {
+                    "text": "No se ha podido controlar la música. Por favor, intenta de nuevo.",
+                }).get("response").get("result")
 
     def get_image_details(self, prompt: str):
-        # TODO: Get image from camera and send to Gemini AI
         return self.server_comm.call_server("gemini", {
             "prompt": prompt,
             "image": self.camera_controller.get_frame(),
@@ -200,10 +203,9 @@ class VoiceAssistant:
         except Exception as e:
             logging.error(f"Error calling Gemini AI: {e}")
 
-        # return "Ha habido un problema al intentar procesar tu solicitud. Por favor, intenta de nuevo."
-        return self.server_comm.call_server("gemini", {
-            "prompt": "Eres un asistente de voz, llamado EYMO. Ha habido un problema al procesar una de las solicitudes que te han hecho, responde de acuerdo con esto.",
-            "reset": True}).get("response").get("result")
+        return self.server_comm.call_server("speech", {
+                    "text": "Ha habido un problema al procesar tu solicitud. Por favor, intenta de nuevo.",
+                }).get("response").get("result")
 
     def listen(self):
         logging.info("Starting the voice assistant service...")
@@ -264,18 +266,15 @@ class VoiceAssistant:
                 text = self.recognize_speech(audio)
 
             if text == "para" or text == "adiós":
-                # Espero haberte sido de ayuda, que tengas un buen dia.
-                self.speak(self.server_comm.call_server("gemini", {
-                    "prompt": "Eres un asistente de voz, llamado EYMO. Te han pedido que pares de ayudar. Responde brevemente que ha sido un placer ayudar estando muy cansado despues de todo el trabajo que has tenido que hacer."}).get(
-                    "response").get("result"))
+                logging.info("[ASSISTANT ACTIVATED] Deactivating assistant...")
                 if self.player.is_playing:
                     self.player.stop()
                 break
             elif text:
+                logging.info(f"[ASSISTANT ACTIVATED] Text detected: {text}")
                 if self.player.is_playing:
                     self.player.set_volume(40)
                 response = self.respond(text)
                 if response:
                     self.speak(response)
-
         logging.error("[ASSITANT ACTIVATED] No action detected. Deactivating assistant...")
