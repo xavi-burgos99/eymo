@@ -183,7 +183,6 @@ class VoiceAssistant:
                 return self.control_music(result.get('function_args'))
             elif result.get('function_name') == 'set_reminder':
                 return self.set_reminder(result.get('function_args'))
-        time.sleep(1)
 
         # Step 2: Check for responses in the intents.json file
         for key, response in self.responses.items():
@@ -214,7 +213,6 @@ class VoiceAssistant:
     def run_assistant(self):
         logging.info("Voice assistant is running...")
 
-        # Hola Soy Eymo, en que te puedo ayudar?
         self.speak(self.server_comm.call_server("gemini", {
             "prompt": "Eres un asistente de voz, llamado EYMO. Te debes presentar a tus usuarios de manera breve y siendo muy cordial."}).get(
             "response").get("result"))
@@ -247,7 +245,6 @@ class VoiceAssistant:
     def activate_assistant(self, mic, after_pattern=None):
         logging.info("[ASSISTANT ACTIVATED] Keyword detected. Activating assistant.")
         if not after_pattern:
-            # Hola, me has llamado? Que necesitas?
             self.speak(self.server_comm.call_server("gemini", {
                 "prompt": "Eres un asistente de voz, llamado EYMO. Han dicho tu nombre, rapido reacciona como un buen asistente haria."}).get(
                 "response").get("result"))
