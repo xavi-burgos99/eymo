@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include "../utilities.hpp"
 
 enum SensorState {
     Initiating = 0,
@@ -13,6 +12,7 @@ enum SensorState {
 class ObstacleDetectionModule{
     public:
         SensorState IRState, BackState;
+        ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig);
     private:
         // Sensor pins
         int _pinIR, _BackEcho, _BackTrig;
@@ -22,10 +22,10 @@ class ObstacleDetectionModule{
         // Back sensors
         float _BackDistance;
 
-        ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig);
         void update();
 		float readInfrared(int pin);
 		float UltraSonicMetrics(int trigger, int echo);
+        float detection_mesurements(bool type, long US_raw, float IR_raw);
 
 };
 
@@ -80,7 +80,7 @@ float ObstacleDetectionModule::readInfrared(int pin) {
     sensorValue_raw = analogRead(pin);
 
     //* print the results to the Serial Monitor:
-    Serial.print("Infrared sensor value: ", sensorValue_raw);
+    // Serial.print("Infrared sensor value: ", sensorValue_raw);
 
     //*  filter unstable values
     if (sensorValue_raw < 0) {
@@ -112,4 +112,11 @@ float ObstacleDetectionModule::UltraSonicMetrics(int trigger, int echo) {
 
     return distance;
 
+}
+
+float ObstacleDetectionModule::detection_mesurements(bool type, long US_raw, float IR_raw){
+    if(type)
+        return (US_raw/2) / 29.1;
+    else
+        return (6787.0f /IR_raw - 3.0f) - 4.0f;
 }

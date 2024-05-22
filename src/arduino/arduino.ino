@@ -1,10 +1,5 @@
 #include "arduino-eymo.h"
 
-MotorControlModule MCM(MotorM1,MotorM2,MotorE1,MotorE2);
-ObstacleDetectionModule ODM(IREcho, USEcho, USTrig);
-ServoMovementModule SMM;
-SoftwareSerial serial(PIN_RX, PIN_TX);
-
 void setup(){
   serial.begin(9600);
   pinMode(MotorE1, OUTPUT);
@@ -21,58 +16,77 @@ void setup(){
   * * * CABEZA,DERECHA
   * * * CABEZA,IZQUIERDA
   * * Dirección cuerpo: 
-  * * * CUERPO,ADELANTE
+  * * * CUERPO,ADELANTE,speed
   * * * CUERPO,STOP
-  * * * CUERPO,ATRAS
+  * * * CUERPO,ATRAS,speed
   * * * CUERPO,STOP,(- % giro)          // Giro en estatico hacia la izquierda 
   * * * CUERPO,STOP,(% giro)            // Giro en estatico hacia la derecha
-  * * * CUERPO,ADELANTE (- % giro) // Giro hacia delante a la izquierda
-  * * * CUERPO,ATRAS(- % giro)     // Giro hacia detras a la derecha
-  * * * CUERPO,ADELANTE (% giro)   // Giro hacia delante a la derecha
-  * * * CUERPO,ATRAS (% giro)      // Giro hacia detras a la izquierda
+  * * * CUERPO,ADELANTE,speed,(% giro)   // Giro hacia delante a la derecha
+  * * * CUERPO,ADELANTE,speed,(- % giro) // Giro hacia delante a la izquierda
+  * * * CUERPO,ATRAS,speed,(% giro)      // Giro hacia detras a la izquierda
+  * * * CUERPO,ATRAS,speed,(- % giro)     // Giro hacia detras a la derecha
 */
 
 void loop(){
+  int cap = 0;
+  bool error_M, error_S;
+
   if (serial.available()) {
     String mensaje = serial.readStringUntil('\n');  // Lee un mensaje hasta el caracter de nueva línea
-    String ordenes[] = mensaje.split(',');
+    String *ordenes = split_string(mensaje, cap);
     if(ordenes[0] == "CABEZA"){
-      if(ordenes[1] == "DERECHA"){
+      if(ordenes[1] == "DERECHA")
+        error_S = SMM.head_movement(-0.06);
+      else
+        error_S = SMM.head_movement(0.06);
+    } 
+    else if(ordenes[0] == "CUERPO"){
 
-      }else{
-
+      if (ordenes[1] == "ADELANTE"){
+        float speed = atof(ordenes[2].c_str());
+        if(cap == 3)
+          error_M = MCM.move(speed,0);
+        else {
+          float giro = atof(ordenes[2].c_str())/100;
+          error_M = MCM.move(speed,giro);
+        }
+      } 
+      else if (ordenes[1] == "STOP"){
+        if(cap == 2)
+          error_M = MCM.move(0,0);
+        else{
+          float giro = atof(ordenes[3].c_str())/100;
+          error_M = MCM.move(0,giro);
+        }
+      } 
+      else if (ordenes[1] == "ATRAS"){
+        float speed = -(atof(ordenes[2].c_str()));
+        if(cap == 3)
+          error_M = MCM.move(speed,0);
+        else {
+          float giro = atof(ordenes[3].c_str())/100;
+          error_M = MCM.move(speed,giro);
+        }
       }
-    } else if(ordenes[0] == "CUERPO"){
-      switch(ordenes[1]){
-        case "ADELANTE":
-          if(ordenes.size() == 2){
-
-          }else{
-            float giro = float(ordenes[2])/100;
-          }
-          break;
-        case "STOP":
-          if(ordenes.size() == 2){
-
-          }else{
-            float giro = float(ordenes[2])/100;
-          }
-          break;
-        case "ATRAS":
-          if(ordenes.size() == 2){
-
-          }else{
-            float giro = float(ordenes[2])/100;
-          }
-          break;
-        default:
-          break;
-      }
-    }else{
-      continue;
     }
-
-
   }
+}
 
+String* split_string(String msg, int &index) {
+  static String partes[4]; // Arreglo de String
+  int inicio = 0;
+  int coma = 0;
+  int i = 0;
+  while (coma != -1 && i < 4) { // Verifica límite del arreglo
+    coma = msg.indexOf(',', inicio); 
+    if (coma != -1) {
+      partes[i] = msg.substring(inicio, coma);
+      inicio = coma + 1;
+    } else {
+      partes[i] = msg.substring(inicio);
+    }
+    i++;
+  }
+  index = i; // Actualiza el índice
+  return partes; // Devuelve un puntero al arreglo
 }
