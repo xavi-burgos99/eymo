@@ -32,7 +32,12 @@ class FunctionalAction(BaseAction, ABC):
                         "type": "string",
                         "description": "Music control command such as 'play', 'pause', 'stop', 'next', 'previous'"
                     },
+                    "song_name": {
+                        "type": "string",
+                        "description": "Name and artist of the song to play to search on the music platform"
+                    },
                 },
+                "required": ["command"]
             },
         )
 
@@ -98,4 +103,4 @@ class FunctionalAction(BaseAction, ABC):
             response['function_args'] = function_call.args
         except IndexError:
             response = None
-        return super().response_json('handleplayback', response)
+        return super().response_json('functional', response)

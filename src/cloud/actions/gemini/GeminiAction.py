@@ -54,7 +54,7 @@ class GeminiAction(BaseAction, ABC):
             image = Part.from_uri(image_file_uri, mime_type="image/png")
 
         if self.chat is None or parameters.get('reset'):
-            self.chat = self.model.start_chat()  
+            self.chat = self.model.start_chat(response_validation=False)  
 
         result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME], image)
         print(result)
