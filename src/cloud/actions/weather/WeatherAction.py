@@ -14,8 +14,8 @@ from abc import ABC
 
 
 class WeatherAction(BaseAction, ABC):
-    
-    WEATHER_PARAM_NAME = "weather"
+    OPTION_PARAM_NAME = "option"
+
     BASE_URL = "http://dataservice.accuweather.com"
     API_KEY = "cveAxjGo1fpAYcd64xglPwlCqhCgqkjo"
     LOCATION_KEY = '304465'
@@ -26,17 +26,9 @@ class WeatherAction(BaseAction, ABC):
 
     def handle(self, parameters: dict):
         print("WeatherAction")
-        #assert self.WEATHER_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.WEATHER_PARAM_NAME)
+        assert self.OPTION_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.OPTION_PARAM_NAME)
 
-        current_conditions = self.weather_api.get_current_conditions(self.LOCATION_KEY)
-        forecast = self.weather_api.get_forecast(self.LOCATION_KEY)
-
-        # Construct response
-        response = {
-            "current_conditions": current_conditions,
-            "forecast": forecast
-        }
-
+        response = self.weather_api.get_forecast(self.LOCATION_KEY, parameters[self.OPTION_PARAM_NAME])
         return super().response_json('weather', response)
     
 
