@@ -82,7 +82,6 @@ src/
 LICENSE.md
 README.md
 ```
-## To Do
 
 ## Bugs and feature requests
 

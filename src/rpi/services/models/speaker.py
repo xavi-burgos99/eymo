@@ -7,7 +7,7 @@ from mutagen.mp3 import MP3
 
 
 class Speaker:
-    def __init__(self, config: dict = None):
+    def __init__(self):
         pygame.mixer.init()
         self.current_file = None
 
