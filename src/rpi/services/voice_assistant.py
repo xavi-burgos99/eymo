@@ -13,6 +13,7 @@ from services.models.audio_player import AudioPlayer
 from services.models.speaker import Speaker
 
 from rpi.controllers.camera_controller import CameraController
+from rpi.services.models.location import Location
 
 
 def load_responses(filepath):
@@ -26,6 +27,8 @@ class VoiceAssistant:
         self.recognizer = sr.Recognizer()
         self.server_comm = server_communication
         self.camera_controller = camera_controller
+
+        self.location = Location()
 
         self.speaker = Speaker()
 
@@ -171,6 +174,22 @@ class VoiceAssistant:
             "image": self.camera_controller.get_frame(),
             "reset": False}).get("response").get("result")
 
+    def get_weather(self, args):
+        logging.info("Getting weather...")
+
+        location_data = self.location.get_location()
+        logging.info(f"Location: {location_data}")
+        if location_data:
+            logging.info("Calling weather service...")
+            return self.server_comm.call_server("weather", {
+                "prompt": args.get("prompt"),
+                "location": location_data,
+            }).get("response").get("result")
+        logging.info("Error getting location...")
+        return self.server_comm.call_server("speech", {
+            "text": "Ha habido un problema al obtener la ubicación. Por favor, intenta de nuevo.",
+        }).get("response").get("result")
+
     def respond(self, text):
         # Step 1: Check for functional commands
         logging.info("Handling playback...")
@@ -183,6 +202,9 @@ class VoiceAssistant:
                 return self.control_music(result.get('function_args'))
             elif result.get('function_name') == 'set_reminder':
                 return self.set_reminder(result.get('function_args'))
+            # TODO: (SAMYA) Update Gemini functionality to handle this
+            elif result.get('function_name') == 'get_weather':
+                return self.get_weather(result.get('function_args'))
 
         # Step 2: Check for responses in the intents.json file
         for key, response in self.responses.items():
