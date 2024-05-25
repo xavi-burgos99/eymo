@@ -119,8 +119,8 @@ class VoiceAssistant:
             logging.info("Playing the song...")
             self.player.play()
             return self.server_comm.call_server("speech", {
-                "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que pongas la cancion {song_name}. Responde de acuerdo con esto, un poco indignado porque no te gusta nada esa cancion.",
-                "reset": True}).get("response").get("result")
+                "text": f"Eres un asistente de voz, llamado EYMO. Te han pedido que pongas la cancion {song_name}. Responde de acuerdo con esto, un poco indignado porque no te gusta nada esa cancion.",
+            }).get("response").get("result")
         return self.server_comm.call_server("speech", {
             "text": f"De acuerdo, la agrego a la lista de reproduccion.",
         }).get("response").get("result")
