@@ -44,7 +44,7 @@ class WeatherAction(BaseAction, ABC):
         result = model.generate_content(prompt)
 
         clean_text = result.text.replace('\n', '')
-        clean_text = re.sub(r'[^a-zA-Z0-9,.:;¿?¡!áéíóúÁÉÍÓÚüÜÑñ\s]', ' ', clean_text)
+        clean_text = re.sub(r'[^a-zA-Z0-9,.:;-_~=¿?¡!áéíóúÁÉÍÓÚüÜÑñ\s]', ' ', clean_text)
         text_response = clean_text.strip()
         print(text_response)
         result_base64 = text_to_speech(result.text)
