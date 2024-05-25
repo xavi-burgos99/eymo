@@ -27,6 +27,7 @@ class ServerCommunication:
 
         logging.info(f"Calling server {self.host}/{self.endpoint} with {serverIn.__dict__}...")
         for attempt in range(3):
+            response = None
             try:
                 response = requests.get(f"{self.host}/{self.endpoint}",
                                         json=serverIn.__dict__,

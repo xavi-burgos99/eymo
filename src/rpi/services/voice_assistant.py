@@ -118,7 +118,7 @@ class VoiceAssistant:
         if not self.player.is_playing:
             logging.info("Playing the song...")
             self.player.play()
-            return self.server_comm.call_server("speech", {
+            return self.server_comm.call_server("gemini", {
                 "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que pongas la cancion {song_name}. Responde de acuerdo con esto, un poco indignado porque no te gusta nada esa cancion.",
                 "reset": True}).get("response").get("result")
         return self.server_comm.call_server("speech", {
