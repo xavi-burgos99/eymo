@@ -27,7 +27,6 @@ class ServerCommunication:
 
         logging.info(f"Calling server {self.host}/{self.endpoint} with {serverIn.__dict__}...")
         for attempt in range(3):
-            response = None
             try:
                 response = requests.get(f"{self.host}/{self.endpoint}",
                                         json=serverIn.__dict__,
@@ -35,6 +34,7 @@ class ServerCommunication:
                                         verify=False)
             except RequestException:
                 logging.error("Failed to connect to the server. Please check the server configurations.")
+                break
 
             logging.info(f"Server response: {response}")
             if response.status_code == 200:
@@ -43,5 +43,8 @@ class ServerCommunication:
                 logging.error(f"Failed to call server. Status code: {response.status_code}. Reason: {response.reason}")
                 logging.info(f"Retrying... ({attempt + 1}/{3})")
                 time.sleep(1)
-
-        return "Ha habido un problema de conexion con el servidor. Por favor, intenta de nuevo."
+        return {
+            "response": {
+                "result": "No se puede conectar con el servidor. Por favor, verifique la configuración del servidor.",
+            }
+        }
