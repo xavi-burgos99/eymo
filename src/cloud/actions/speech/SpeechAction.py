@@ -17,6 +17,6 @@ class SpeechAction(BaseAction, ABC):
     def handle(self, parameters: dict):
         assert self.TEXT_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.TEXT_PARAM_NAME)
 
-        result_base64 = text_to_speech(self.TEXT_PARAM_NAME)
+        result_base64 = text_to_speech(parameters.get(self.TEXT_PARAM_NAME))
         return super().response_json('speech', result_base64)
     
