@@ -47,7 +47,7 @@ class WeatherAction(BaseAction, ABC):
         clean_text = re.sub(r'[^a-zA-Z0-9,.:;-_~=¿?¡!áéíóúÁÉÍÓÚüÜÑñ\s]', ' ', clean_text)
         text_response = clean_text.strip()
         print(text_response)
-        result_base64 = text_to_speech(result.text)
+        result_base64 = text_to_speech(text_response)
         return super().response_json('weather', result_base64)
 
         
