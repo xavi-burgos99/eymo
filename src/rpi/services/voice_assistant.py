@@ -196,7 +196,7 @@ class VoiceAssistant:
         # Step 1: Check for functional commands
         logging.info("Handling playback...")
         location_data = self.location.get_location()
-        response = self.server_comm.call_server("functional", {"prompt": text + " | lat: " + location_data.get("lat") + " lon: " + location_data.get("lon")})
+        response = self.server_comm.call_server("functional", {"prompt": text + " | lat: " + str(location_data.get("lat")) + " lon: " + str(location_data.get("long"))})
         logging.info(f"Playback response: {response}")
         result = response.get('response').get('result')
         logging.info(f"Playback result: {result}")
