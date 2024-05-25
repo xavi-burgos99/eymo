@@ -40,7 +40,7 @@ class GeminiAction(BaseAction, ABC):
             for chunk in responses:
                 clean_text = chunk.text.replace('\n', '')
                 clean_text = re.sub(r'[^a-zA-Z0-9,.:;¿?¡!áéíóúÁÉÍÓÚüÜ\s]', ' ', clean_text)
-                text_response += clean_text.strip()
+                text_response += (str(" ") + clean_text.strip())
             return text_response
     
 

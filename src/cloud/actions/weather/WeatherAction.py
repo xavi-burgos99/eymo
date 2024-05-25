@@ -1,4 +1,5 @@
 import vertexai
+import re
 from vertexai.generative_models import (
     Content,
     GenerationConfig,
@@ -31,17 +32,23 @@ class WeatherAction(BaseAction, ABC):
         assert self.OPTION_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.OPTION_PARAM_NAME)
         assert self.LAT_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.LAT_PARAM_NAME)
         assert self.LON_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.LON_PARAM_NAME)
-
         response = self.weather_api.get_forecast(parameters[self.OPTION_PARAM_NAME], parameters[self.LAT_PARAM_NAME], parameters[self.LON_PARAM_NAME])
         min = farenheit_to_celsius(float(response.get("Temperature").get("Minimum").get("Value")))
         max = farenheit_to_celsius(float(response.get("Temperature").get("Maximum").get("Value")))
-
-        prompt = "Breve y en español:" + str(response.get("Day").get("IconPhrase"))+ \
-            "The temperature will be bettween " + min + max + " degrees celsius."
+        print(str(parameters[self.OPTION_PARAM_NAME]))
+        prompt = "Breve y en español:" + str(parameters[self.OPTION_PARAM_NAME]) + str(response.get("Day").get("IconPhrase"))+ \
+            "The temperature will be bettween " + min + max + " degrees celsius. Y dame algun consejo"
 
         model = GenerativeModel("gemini-pro")
         result = model.generate_content(prompt)
+        text_response = ""
+
         print(result.text)
+        for chunk in result.text:
+                clean_text = chunk.replace('\n', '')
+                clean_text = re.sub(r'[^a-zA-Z0-9,.:;¿?¡!áéíóúÁÉÍÓÚüÜÑñ\s]', ' ', clean_text)
+                text_response += (str(" ") + clean_text.strip())
+        print(text_response)
         result_base64 = text_to_speech(result.text)
         return super().response_json('weather', result_base64)
 
