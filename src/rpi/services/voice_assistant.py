@@ -176,24 +176,27 @@ class VoiceAssistant:
 
     def get_weather(self, args):
         logging.info("Getting weather...")
-
-        location_data = self.location.get_location()
-        logging.info(f"Location: {location_data}")
-        if location_data:
-            logging.info("Calling weather service...")
-            return self.server_comm.call_server("weather", {
-                "prompt": args.get("prompt"),
-                "location": location_data,
-            }).get("response").get("result")
-        logging.info("Error getting location...")
+        data = {
+            "option": args.get("option"),
+            "latitude": args.get("latitude"),
+            "longitude": args.get("longitude"),
+        }
+        logging.info("Calling weather service...")
+        try:
+            return (self.server_comm.call_server("weather", data)
+                    .get("response")
+                    .get("result"))
+        except Exception as e:
+            logging.error(f"Error calling weather service: {e}")
         return self.server_comm.call_server("speech", {
-            "text": "Ha habido un problema al obtener la ubicación. Por favor, intenta de nuevo.",
+            "text": "Ha habido un problema al obtener el clima. Por favor, intenta de nuevo.",
         }).get("response").get("result")
 
     def respond(self, text):
         # Step 1: Check for functional commands
         logging.info("Handling playback...")
-        response = self.server_comm.call_server("functional", {"prompt": text})
+        location_data = self.location.get_location()
+        response = self.server_comm.call_server("functional", {"prompt": text + " | lat: " + location_data.get("lat") + " lon: " + location_data.get("lon")})
         logging.info(f"Playback response: {response}")
         result = response.get('response').get('result')
         logging.info(f"Playback result: {result}")
@@ -202,7 +205,6 @@ class VoiceAssistant:
                 return self.control_music(result.get('function_args'))
             elif result.get('function_name') == 'set_reminder':
                 return self.set_reminder(result.get('function_args'))
-            # TODO: (SAMYA) Update Gemini functionality to handle this
             elif result.get('function_name') == 'get_weather':
                 return self.get_weather(result.get('function_args'))
 
