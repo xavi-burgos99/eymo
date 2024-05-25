@@ -15,6 +15,7 @@ class WeatherApi(BaseApi):
         response = self.send_request("GET", endpoint)
         response.raise_for_status()  # Raise an exception for non-2xx responses
         return response.json()'''
+    
 
     def get_geoposition(self, latitude: str, longitude: str) -> Dict[str, Any]:
         """
@@ -39,3 +40,7 @@ class WeatherApi(BaseApi):
         response.raise_for_status()  # Raise an exception for non-2xx responses
 
         return response.json().get("DailyForecasts")[number]
+
+def farenheit_to_celsius(farenheit):
+        celsius = "{:.2f}".format((farenheit - 32) * 5.0/9.0)
+        return str(celsius)

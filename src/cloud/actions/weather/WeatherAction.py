@@ -8,7 +8,7 @@ from vertexai.generative_models import (
 )
 
 from src.cloud.actions.BaseAction import BaseAction
-from src.cloud.external.WeatherApi import WeatherApi
+from src.cloud.external.WeatherApi import WeatherApi, farenheit_to_celsius
 
 from abc import ABC
 from src.cloud.external.TextToSpeech import text_to_speech
@@ -33,17 +33,16 @@ class WeatherAction(BaseAction, ABC):
         assert self.LON_PARAM_NAME in parameters.keys(), super().parameter_must_be_sent(self.LON_PARAM_NAME)
 
         response = self.weather_api.get_forecast(parameters[self.OPTION_PARAM_NAME], parameters[self.LAT_PARAM_NAME], parameters[self.LON_PARAM_NAME])
-        print(response.get("Day").get("IconPhrase"))
-        prompt = f"En español, dame una respuesta que contenga: Description: {response.get("Day").get("IconPhrase")} \
-            The temperature will be bettween {response.get("Temperature").get("Minimum").get("Value")} \
-            and {response.get("Temperature").get("Maximum").get("Value")} degrees"  
-        ##### TODO: return base64 audio with the weather forecast using gemini
+        min = farenheit_to_celsius(float(response.get("Temperature").get("Minimum").get("Value")))
+        max = farenheit_to_celsius(float(response.get("Temperature").get("Maximum").get("Value")))
+
+        prompt = "Breve y en español:" + str(response.get("Day").get("IconPhrase"))+ \
+            "The temperature will be bettween " + min + max + " degrees celsius."
+
         model = GenerativeModel("gemini-pro")
         result = model.generate_content(prompt)
-        print(result)
-        
-        
-        result_base64 = text_to_speech(result)
+        print(result.text)
+        result_base64 = text_to_speech(result.text)
         return super().response_json('weather', result_base64)
 
         
