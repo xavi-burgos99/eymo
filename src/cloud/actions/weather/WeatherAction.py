@@ -20,7 +20,8 @@ class WeatherAction(BaseAction, ABC):
     LON_PARAM_NAME = "longitude"
 
     BASE_URL = "http://dataservice.accuweather.com"
-    API_KEY = "cveAxjGo1fpAYcd64xglPwlCqhCgqkjo"
+    #API_KEY = "cveAxjGo1fpAYcd64xglPwlCqhCgqkjo" Samya
+    API_KEY = "FaZJ0i1v5wePcQP37bGk9SxkA8eSIyKM"
     LOCATION_KEY = '304465'
     
     def __init__(self):
@@ -37,17 +38,14 @@ class WeatherAction(BaseAction, ABC):
         max = farenheit_to_celsius(float(response.get("Temperature").get("Maximum").get("Value")))
         print(str(parameters[self.OPTION_PARAM_NAME]))
         prompt = "Breve y en español:" + str(parameters[self.OPTION_PARAM_NAME]) + str(response.get("Day").get("IconPhrase"))+ \
-            "The temperature will be bettween " + min + max + " degrees celsius. Y dame algun consejo"
+            "The temperature will be bettween " + min + max + " degrees celsius."
 
         model = GenerativeModel("gemini-pro")
         result = model.generate_content(prompt)
-        text_response = ""
 
-        print(result.text)
-        for chunk in result.text:
-                clean_text = chunk.replace('\n', '')
-                clean_text = re.sub(r'[^a-zA-Z0-9,.:;¿?¡!áéíóúÁÉÍÓÚüÜÑñ\s]', ' ', clean_text)
-                text_response += (str(" ") + clean_text.strip())
+        clean_text = result.text.replace('\n', '')
+        clean_text = re.sub(r'[^a-zA-Z0-9,.:;¿?¡!áéíóúÁÉÍÓÚüÜÑñ\s]', ' ', clean_text)
+        text_response = clean_text.strip()
         print(text_response)
         result_base64 = text_to_speech(result.text)
         return super().response_json('weather', result_base64)
