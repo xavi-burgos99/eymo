@@ -1,5 +1,5 @@
 import subprocess
-
+import platform
 
 def check_network_connection():
     """
@@ -7,7 +7,10 @@ def check_network_connection():
     :return: True if there's connection, False otherwise
     """
     try:
-        subprocess.check_output(['ping', '8.8.8.8'], stderr=subprocess.STDOUT)
+        if platform.system() == 'Windows':
+            subprocess.check_output(['ping', '-n', '1', '8.8.8.8'], stderr=subprocess.STDOUT)
+        else:
+            subprocess.check_output(['ping', '-c', '1', '8.8.8.8'], stderr=subprocess.STDOUT)
         return True
     except subprocess.CalledProcessError:
         return False

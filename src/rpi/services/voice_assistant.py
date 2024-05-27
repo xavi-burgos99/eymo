@@ -1,8 +1,12 @@
 import time
 import re
 import json
+import queue
+import base64
+
 import threading
 import logging
+import platform
 
 import speech_recognition as sr
 
@@ -10,6 +14,8 @@ from datetime import datetime
 
 from services.server_communication import ServerCommunication
 from services.models.audio_player import AudioPlayer
+from services.tripod_mode import TripodMode
+from services.screen import Screen
 from services.models.speaker import Speaker
 
 from rpi.controllers.camera_controller import CameraController
@@ -21,22 +27,27 @@ def load_responses(filepath):
         data = json.load(file)
     return data['responses']
 
-
 class VoiceAssistant:
-    def __init__(self, config: dict, server_communication: ServerCommunication, camera_controller: CameraController = None):
+    def __init__(self, config: dict, server_communication: ServerCommunication, screen: Screen, tripod_mode: TripodMode, camera_controller: CameraController = None):
         self.recognizer = sr.Recognizer()
         self.server_comm = server_communication
+        self.screen = screen
+        self.tripod_mode = tripod_mode
         self.camera_controller = camera_controller
-
+        
         self.location = Location()
 
-        self.speaker = Speaker()
+        self.speaker = Speaker(config)
 
         self.responses = json.load(open('./static/intents.json'))["responses"]
 
         self.pattern = config["pattern"]
         self.threshold_duration = config["threshold_duration"]
+        self.queue_timeout = config["queue_timeout"]
 
+        self.queue = queue.Queue(maxsize=config["queue_size"])
+        self.lock = threading.Lock()
+        self.stop_listening = threading.Event()
         self.timeout = config.get("listen_timeout")
         self.activated_timeout = config["activated_timeout"]
 
@@ -44,6 +55,7 @@ class VoiceAssistant:
             "get_help": self.get_help,
             "set_reminder": self.set_reminder,
             "get_image_details": self.get_image_details,
+            "tripod_mode": self.toggle_tripod_mode,
         }
 
         self.player = AudioPlayer()
@@ -52,7 +64,7 @@ class VoiceAssistant:
         reminder_thread = threading.Thread(target=self.check_reminders)
         reminder_thread.start()
 
-    def speak(self, text):
+    def speak(self, text, tts=False):
         if self.player and self.player.is_playing:
             self.player.set_volume(40)
             time.sleep(1)
@@ -60,7 +72,7 @@ class VoiceAssistant:
             time.sleep(audio_length)
             self.player.set_volume(100)
         else:
-            self.speaker.play(text)
+            self.speaker.play(text, tts)
 
     def get_help(self, args):
         return self.server_comm.call_server("speech", {
@@ -234,11 +246,12 @@ class VoiceAssistant:
         logging.info("Starting the voice assistant service...")
         threading.Thread(target=self.run_assistant()).start()
 
+    """
     def run_assistant(self):
         logging.info("Voice assistant is running...")
 
         self.speak(self.server_comm.call_server("gemini", {
-            "prompt": "Eres un asistente de voz, llamado EYMO. Te debes presentar a tus usuarios de manera breve y siendo muy cordial."}).get(
+            "prompt": "Eres un asistente de voz, llamado Eymo. Te debes presentar a tus usuarios de manera breve y siendo muy cordial."}).get(
             "response").get("result"))
 
         while True:
@@ -256,7 +269,48 @@ class VoiceAssistant:
                         after_pattern = text[match.end():].strip()
                         logging.info(f"After pattern: {after_pattern}")
                         self.activate_assistant(mic, after_pattern)
-
+    """
+    
+    def process_queue(self, mic):
+        while not self.stop_listening.is_set():
+            try:
+                audio = self.queue.get(timeout=self.queue_timeout)
+                text = self.recognize_speech(audio)
+                if text:
+                    match = re.match(self.pattern, text, re.IGNORECASE)
+                    if match:
+                        with self.lock:
+                            after_pattern = text[match.end():].strip()
+                            logging.info(f"After pattern: {after_pattern}")
+                            logging.info("Bloqueando escucha...")
+                            self.stop_listening.set()
+                            self.activate_assistant(mic, after_pattern)
+                            self.stop_listening.clear()
+                            logging.info("Desbloqueando escucha...")
+            except queue.Empty:
+                continue
+            
+    def recognize_thread(self, mic):
+        processing_thread = threading.Thread(target=self.process_queue, args=(mic,))
+        processing_thread.start()
+        return processing_thread
+    
+    def run_assistant(self):
+        logging.info("Voice assistant is running...")
+        self.speak("Hola, soy Eymo, tu asistente de voz. ¿En qué puedo ayudarte?", True)
+        with sr.Microphone() as mic:
+            self.recognize_thread(mic)
+            while True:
+                self.recognizer.adjust_for_ambient_noise(mic, duration=self.threshold_duration)
+                logging.info("Listening...")
+                audio = self.recognizer.listen(mic, None)
+                if self.queue.full():
+                    logging.info("Queue is full. Skipping the oldest request...")
+                    self.queue.get()
+                    self.queue.task_done()
+                self.queue.put(audio)
+        
+    
     def recognize_speech(self, audio):
         try:
             logging.info("Trying to recognize speech...")
@@ -299,3 +353,9 @@ class VoiceAssistant:
                 if response:
                     self.speak(response)
         logging.error("[ASSITANT ACTIVATED] No action detected. Deactivating assistant...")
+
+    def toggle_tripod_mode(self, args):
+        res = self.tripod_mode.toggle()
+        if res:
+            return "El modo trípode ha sido activado."
+        return "El modo trípode ha sido desactivado."
