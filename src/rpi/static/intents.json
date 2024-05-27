@@ -9,6 +9,6 @@
         "ayuda": "get_help",
         "modo trípode": "tripod_mode",
         "recuerda": "set_reminder",
-        "qué es esto": "get_image_details"
+        "reconoce esto": "get_image_details"
     }
 }

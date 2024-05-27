@@ -12,7 +12,7 @@
     }
   },
   "server": {
-    "host": "https://34.163.254.245:7125",
+    "host": "https://34.163.47.11:7125",
     "endpoint": "action/perform"
   },
   "voice": {
@@ -21,7 +21,7 @@
       "mac": "com.apple.speech.synthesis.voice.jorge"
     },
     "rate": 150,
-    "pattern": "^(eymo|eimo|heimo|heymo|hemo|imo)\\b",
+    "pattern": "^(eymo|eimo|heimo|heymo|hemo|imo|primo)\\b",
     "threshold_duration": 0.4,
     "activated_timeout": 30,
     "queue_size": 2,

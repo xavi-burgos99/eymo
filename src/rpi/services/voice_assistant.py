@@ -297,7 +297,9 @@ class VoiceAssistant:
     
     def run_assistant(self):
         logging.info("Voice assistant is running...")
-        self.speak("Hola, soy Eymo, tu asistente de voz. ¿En qué puedo ayudarte?", True)
+        self.speak(self.server_comm.call_server("speech", {
+                "text": "Hola, soy Eymo, tu asistente de voz. ¿En qué puedo ayudarte?"}).get(
+                "response").get("result"))
         with sr.Microphone() as mic:
             self.recognize_thread(mic)
             while True:

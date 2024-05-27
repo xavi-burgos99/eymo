@@ -1,10 +1,12 @@
 import cv2
 import numpy as np
 
-try:
-    import tflite_runtime.interpreter as tflite
-except ImportError:
-    import tensorflow.lite as tflite
+#try:
+#    import tflite_runtime.interpreter as tflite
+#except ImportError:
+#    import tensorflow.lite as tflite
+
+import tensorflow.lite as tflite
 
 class Vision:
   
