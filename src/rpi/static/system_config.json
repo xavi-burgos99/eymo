@@ -21,12 +21,13 @@
       "mac": "com.apple.speech.synthesis.voice.jorge"
     },
     "rate": 150,
-    "pattern": "^(eymo|eimo|heimo|heymo|hemo|imo|primo)\\b",
+    "pattern": "((oye|ola|hola)\\s+(eymo|eimo|heimo|heymo|imo|inma|e Inma|eima|pedimos|primo|eimos)\\b)|^(eimo|eymo|heimo|heymo|imo|inma|e Inma|eima|pedimos|primo|eimos)",
     "threshold_duration": 0.4,
     "activated_timeout": 30,
-    "queue_size": 2,
+    "queue_size": 4,
     "queue_timeout": 10,
-    "pitch": 6
+    "pitch": 6,
+    "listen_timeout": 10
   },
   "camera": {
     "cam_port": 0

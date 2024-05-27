@@ -2,11 +2,9 @@ import time
 import re
 import json
 import queue
-import base64
 
 import threading
 import logging
-import platform
 
 import speech_recognition as sr
 
@@ -359,5 +357,10 @@ class VoiceAssistant:
     def toggle_tripod_mode(self, args):
         res = self.tripod_mode.toggle()
         if res:
-            return "El modo trípode ha sido activado."
-        return "El modo trípode ha sido desactivado."
+            return self.server_comm.call_server("speech", {
+                "text": "El modo trípode ha sido activado."}).get(
+                "response").get("result")
+
+        return self.server_comm.call_server("speech", {
+                "text": "El modo trípode ha sido desactivado."}).get(
+                "response").get("result")
