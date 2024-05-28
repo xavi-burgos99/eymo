@@ -25,14 +25,16 @@ def load_responses(filepath):
         data = json.load(file)
     return data['responses']
 
+
 class VoiceAssistant:
-    def __init__(self, config: dict, server_communication: ServerCommunication, screen: Screen, tripod_mode: TripodMode, camera_controller: CameraController = None):
+    def __init__(self, config: dict, server_communication: ServerCommunication, screen: Screen, tripod_mode: TripodMode,
+                 camera_controller: CameraController = None):
         self.recognizer = sr.Recognizer()
         self.server_comm = server_communication
         self.screen = screen
         self.tripod_mode = tripod_mode
         self.camera_controller = camera_controller
-        
+
         self.location = Location()
 
         self.speaker = Speaker(config)
@@ -74,7 +76,7 @@ class VoiceAssistant:
 
     def get_help(self, args):
         return self.server_comm.call_server("speech", {
-                            "text": "No te quiero ayudar. Me caes mal."
+            "text": "No te quiero ayudar. Me caes mal."
         }).get("response").get("result")
 
     def check_reminders(self):
@@ -85,7 +87,8 @@ class VoiceAssistant:
 
             for reminder in self.reminders:
                 if reminder.get('date') == current_date:
-                    logging.info(f"Reminder: {reminder.get('reminder')} is due today but at {reminder.get('time')}, now it's {current_time}.")
+                    logging.info(
+                        f"Reminder: {reminder.get('reminder')} is due today but at {reminder.get('time')}, now it's {current_time}.")
                     if reminder.get('time') <= current_time:
                         logging.info(f"Reminder: {reminder['reminder']} is due now!")
                         reminder_info = reminder.get("reminder")
@@ -125,7 +128,7 @@ class VoiceAssistant:
         logging.info(f"Song URL: {song_url}")
         self.player.add_to_playlist(song_url)
         logging.info("Starting audio player...")
-        if not self.player.is_playing:
+        if not self.player.is_playing and not self.player.paused:
             logging.info("Playing the song...")
             self.player.play()
             return self.server_comm.call_server("gemini", {
@@ -175,8 +178,8 @@ class VoiceAssistant:
         else:
             logging.warning("[CONTROL_MUSIC] Invalid command.")
             return self.server_comm.call_server("speech", {
-                    "text": "No se ha podido controlar la música. Por favor, intenta de nuevo.",
-                }).get("response").get("result")
+                "text": "No se ha podido controlar la música. Por favor, intenta de nuevo.",
+            }).get("response").get("result")
 
     def get_image_details(self, prompt: str):
         return self.server_comm.call_server("gemini", {
@@ -206,7 +209,8 @@ class VoiceAssistant:
         # Step 1: Check for functional commands
         logging.info("Handling playback...")
         location_data = self.location.get_location()
-        response = self.server_comm.call_server("functional", {"prompt": text + " | lat: " + str(location_data.get("lat")) + " lon: " + str(location_data.get("long"))})
+        response = self.server_comm.call_server("functional", {
+            "prompt": text + " | lat: " + str(location_data.get("lat")) + " lon: " + str(location_data.get("long"))})
         logging.info(f"Playback response: {response}")
         result = response.get('response').get('result')
         logging.info(f"Playback result: {result}")
@@ -237,14 +241,13 @@ class VoiceAssistant:
             logging.error(f"Error calling Gemini AI: {e}")
 
         return self.server_comm.call_server("speech", {
-                    "text": "Ha habido un problema al procesar tu solicitud. Por favor, intenta de nuevo.",
-                }).get("response").get("result")
+            "text": "Ha habido un problema al procesar tu solicitud. Por favor, intenta de nuevo.",
+        }).get("response").get("result")
 
     def listen(self):
         logging.info("Starting the voice assistant service...")
         threading.Thread(target=self.run_assistant()).start()
 
-    """
     def run_assistant(self):
         logging.info("Voice assistant is running...")
 
@@ -267,8 +270,7 @@ class VoiceAssistant:
                         after_pattern = text[match.end():].strip()
                         logging.info(f"After pattern: {after_pattern}")
                         self.activate_assistant(mic, after_pattern)
-    """
-    
+
     def process_queue(self, mic):
         while not self.stop_listening.is_set():
             try:
@@ -287,12 +289,13 @@ class VoiceAssistant:
                             logging.info("Desbloqueando escucha...")
             except queue.Empty:
                 continue
-            
+
     def recognize_thread(self, mic):
         processing_thread = threading.Thread(target=self.process_queue, args=(mic,))
         processing_thread.start()
         return processing_thread
-    
+
+    """
     def run_assistant(self):
         logging.info("Voice assistant is running...")
         self.speak(self.server_comm.call_server("speech", {
@@ -309,8 +312,8 @@ class VoiceAssistant:
                     self.queue.get()
                     self.queue.task_done()
                 self.queue.put(audio)
-        
-    
+    """
+
     def recognize_speech(self, audio):
         try:
             logging.info("Trying to recognize speech...")
@@ -337,7 +340,7 @@ class VoiceAssistant:
             else:
                 self.recognizer.pause_threshold = 1
                 self.recognizer.adjust_for_ambient_noise(mic, duration=self.threshold_duration)
-                audio = self.recognizer.listen(mic, timeout=self.timeout)
+                audio = self.recognizer.listen(mic) #timeout=self.timeout)
                 text = self.recognize_speech(audio)
 
             if text == "para" or text == "adiós":
@@ -362,5 +365,5 @@ class VoiceAssistant:
                 "response").get("result")
 
         return self.server_comm.call_server("speech", {
-                "text": "El modo trípode ha sido desactivado."}).get(
-                "response").get("result")
+            "text": "El modo trípode ha sido desactivado."}).get(
+            "response").get("result")
