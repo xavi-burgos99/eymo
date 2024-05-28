@@ -3,23 +3,23 @@ import logging
 import threading
 
 import cv2
-import numpy as np
 
 
 class CameraController:
     def __init__(self, config: dict):
         self.cam = cv2.VideoCapture(config["cam_port"])
 
-    def get_frame(self) -> None or np.ndarray:
+    def get_frame(self, base64_encode=True):
         result, image = self.cam.read()
-        logging.info("Reading camera image...")
+        logging.debug("Reading camera image...")
         if not result:
             logging.error("Could not read camera image.", exc_info=True)
             return None
-
-        retval, buffer = cv2.imencode('.png', image)
-        png_as_text = base64.b64encode(buffer).decode('utf-8')
-        return png_as_text
+        if base64_encode:
+            retval, buffer = cv2.imencode('.png', image)
+            png_as_text = base64.b64encode(buffer).decode('utf-8')
+            return png_as_text
+        return image
 
     def record_video(self, duration):
         threading.Thread(target=self._record_video, args=(duration,)).start()

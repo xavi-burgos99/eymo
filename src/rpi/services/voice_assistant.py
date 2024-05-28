@@ -1,6 +1,8 @@
 import time
 import re
 import json
+import queue
+
 import threading
 import logging
 
@@ -10,6 +12,8 @@ from datetime import datetime
 
 from services.server_communication import ServerCommunication
 from services.models.audio_player import AudioPlayer
+from services.tripod_mode import TripodMode
+from services.screen import Screen
 from services.models.speaker import Speaker
 
 from rpi.controllers.camera_controller import CameraController
@@ -23,20 +27,27 @@ def load_responses(filepath):
 
 
 class VoiceAssistant:
-    def __init__(self, config: dict, server_communication: ServerCommunication, camera_controller: CameraController = None):
+    def __init__(self, config: dict, server_communication: ServerCommunication, screen: Screen, tripod_mode: TripodMode,
+                 camera_controller: CameraController = None):
         self.recognizer = sr.Recognizer()
         self.server_comm = server_communication
+        self.screen = screen
+        self.tripod_mode = tripod_mode
         self.camera_controller = camera_controller
 
         self.location = Location()
 
-        self.speaker = Speaker()
+        self.speaker = Speaker(config)
 
         self.responses = json.load(open('./static/intents.json'))["responses"]
 
         self.pattern = config["pattern"]
         self.threshold_duration = config["threshold_duration"]
+        self.queue_timeout = config["queue_timeout"]
 
+        self.queue = queue.Queue(maxsize=config["queue_size"])
+        self.lock = threading.Lock()
+        self.stop_listening = threading.Event()
         self.timeout = config.get("listen_timeout")
         self.activated_timeout = config["activated_timeout"]
 
@@ -44,6 +55,7 @@ class VoiceAssistant:
             "get_help": self.get_help,
             "set_reminder": self.set_reminder,
             "get_image_details": self.get_image_details,
+            "tripod_mode": self.toggle_tripod_mode,
         }
 
         self.player = AudioPlayer()
@@ -52,7 +64,7 @@ class VoiceAssistant:
         reminder_thread = threading.Thread(target=self.check_reminders)
         reminder_thread.start()
 
-    def speak(self, text):
+    def speak(self, text, tts=False):
         if self.player and self.player.is_playing:
             self.player.set_volume(40)
             time.sleep(1)
@@ -60,11 +72,11 @@ class VoiceAssistant:
             time.sleep(audio_length)
             self.player.set_volume(100)
         else:
-            self.speaker.play(text)
+            self.speaker.play(text, tts)
 
     def get_help(self, args):
         return self.server_comm.call_server("speech", {
-                            "text": "No te quiero ayudar. Me caes mal."
+            "text": "No te quiero ayudar. Me caes mal."
         }).get("response").get("result")
 
     def check_reminders(self):
@@ -75,7 +87,8 @@ class VoiceAssistant:
 
             for reminder in self.reminders:
                 if reminder.get('date') == current_date:
-                    logging.info(f"Reminder: {reminder.get('reminder')} is due today but at {reminder.get('time')}, now it's {current_time}.")
+                    logging.info(
+                        f"Reminder: {reminder.get('reminder')} is due today but at {reminder.get('time')}, now it's {current_time}.")
                     if reminder.get('time') <= current_time:
                         logging.info(f"Reminder: {reminder['reminder']} is due now!")
                         reminder_info = reminder.get("reminder")
@@ -115,12 +128,12 @@ class VoiceAssistant:
         logging.info(f"Song URL: {song_url}")
         self.player.add_to_playlist(song_url)
         logging.info("Starting audio player...")
-        if not self.player.is_playing:
+        if not self.player.is_playing and not self.player.paused:
             logging.info("Playing the song...")
             self.player.play()
-            return self.server_comm.call_server("speech", {
-                "text": f"Eres un asistente de voz, llamado EYMO. Te han pedido que pongas la cancion {song_name}. Responde de acuerdo con esto, un poco indignado porque no te gusta nada esa cancion.",
-            }).get("response").get("result")
+            return self.server_comm.call_server("gemini", {
+                "prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que pongas la cancion {song_name}. Responde de acuerdo con esto, un poco indignado porque no te gusta nada esa cancion.",
+                "reset": True}).get("response").get("result")
         return self.server_comm.call_server("speech", {
             "text": f"De acuerdo, la agrego a la lista de reproduccion.",
         }).get("response").get("result")
@@ -165,8 +178,8 @@ class VoiceAssistant:
         else:
             logging.warning("[CONTROL_MUSIC] Invalid command.")
             return self.server_comm.call_server("speech", {
-                    "text": "No se ha podido controlar la música. Por favor, intenta de nuevo.",
-                }).get("response").get("result")
+                "text": "No se ha podido controlar la música. Por favor, intenta de nuevo.",
+            }).get("response").get("result")
 
     def get_image_details(self, prompt: str):
         return self.server_comm.call_server("gemini", {
@@ -176,24 +189,28 @@ class VoiceAssistant:
 
     def get_weather(self, args):
         logging.info("Getting weather...")
-
-        location_data = self.location.get_location()
-        logging.info(f"Location: {location_data}")
-        if location_data:
-            logging.info("Calling weather service...")
-            return self.server_comm.call_server("weather", {
-                "prompt": args.get("prompt"),
-                "location": location_data,
-            }).get("response").get("result")
-        logging.info("Error getting location...")
+        data = {
+            "option": args.get("option"),
+            "latitude": args.get("latitude"),
+            "longitude": args.get("longitude"),
+        }
+        logging.info("Calling weather service...")
+        try:
+            return (self.server_comm.call_server("weather", data)
+                    .get("response")
+                    .get("result"))
+        except Exception as e:
+            logging.error(f"Error calling weather service: {e}")
         return self.server_comm.call_server("speech", {
-            "text": "Ha habido un problema al obtener la ubicación. Por favor, intenta de nuevo.",
+            "text": "Ha habido un problema al obtener el clima. Por favor, intenta de nuevo.",
         }).get("response").get("result")
 
     def respond(self, text):
         # Step 1: Check for functional commands
         logging.info("Handling playback...")
-        response = self.server_comm.call_server("functional", {"prompt": text})
+        location_data = self.location.get_location()
+        response = self.server_comm.call_server("functional", {
+            "prompt": text + " | lat: " + str(location_data.get("lat")) + " lon: " + str(location_data.get("long"))})
         logging.info(f"Playback response: {response}")
         result = response.get('response').get('result')
         logging.info(f"Playback result: {result}")
@@ -202,7 +219,6 @@ class VoiceAssistant:
                 return self.control_music(result.get('function_args'))
             elif result.get('function_name') == 'set_reminder':
                 return self.set_reminder(result.get('function_args'))
-            # TODO: (SAMYA) Update Gemini functionality to handle this
             elif result.get('function_name') == 'get_weather':
                 return self.get_weather(result.get('function_args'))
 
@@ -225,8 +241,8 @@ class VoiceAssistant:
             logging.error(f"Error calling Gemini AI: {e}")
 
         return self.server_comm.call_server("speech", {
-                    "text": "Ha habido un problema al procesar tu solicitud. Por favor, intenta de nuevo.",
-                }).get("response").get("result")
+            "text": "Ha habido un problema al procesar tu solicitud. Por favor, intenta de nuevo.",
+        }).get("response").get("result")
 
     def listen(self):
         logging.info("Starting the voice assistant service...")
@@ -236,7 +252,7 @@ class VoiceAssistant:
         logging.info("Voice assistant is running...")
 
         self.speak(self.server_comm.call_server("gemini", {
-            "prompt": "Eres un asistente de voz, llamado EYMO. Te debes presentar a tus usuarios de manera breve y siendo muy cordial."}).get(
+            "prompt": "Eres un asistente de voz, llamado Eymo. Te debes presentar a tus usuarios de manera breve y siendo muy cordial."}).get(
             "response").get("result"))
 
         while True:
@@ -254,6 +270,49 @@ class VoiceAssistant:
                         after_pattern = text[match.end():].strip()
                         logging.info(f"After pattern: {after_pattern}")
                         self.activate_assistant(mic, after_pattern)
+
+    def process_queue(self, mic):
+        while not self.stop_listening.is_set():
+            try:
+                audio = self.queue.get(timeout=self.queue_timeout)
+                text = self.recognize_speech(audio)
+                if text:
+                    match = re.match(self.pattern, text, re.IGNORECASE)
+                    if match:
+                        with self.lock:
+                            after_pattern = text[match.end():].strip()
+                            logging.info(f"After pattern: {after_pattern}")
+                            logging.info("Bloqueando escucha...")
+                            self.stop_listening.set()
+                            self.activate_assistant(mic, after_pattern)
+                            self.stop_listening.clear()
+                            logging.info("Desbloqueando escucha...")
+            except queue.Empty:
+                continue
+
+    def recognize_thread(self, mic):
+        processing_thread = threading.Thread(target=self.process_queue, args=(mic,))
+        processing_thread.start()
+        return processing_thread
+
+    """
+    def run_assistant(self):
+        logging.info("Voice assistant is running...")
+        self.speak(self.server_comm.call_server("speech", {
+                "text": "Hola, soy Eymo, tu asistente de voz. ¿En qué puedo ayudarte?"}).get(
+                "response").get("result"))
+        with sr.Microphone() as mic:
+            self.recognize_thread(mic)
+            while True:
+                self.recognizer.adjust_for_ambient_noise(mic, duration=self.threshold_duration)
+                logging.info("Listening...")
+                audio = self.recognizer.listen(mic, None)
+                if self.queue.full():
+                    logging.info("Queue is full. Skipping the oldest request...")
+                    self.queue.get()
+                    self.queue.task_done()
+                self.queue.put(audio)
+    """
 
     def recognize_speech(self, audio):
         try:
@@ -281,7 +340,7 @@ class VoiceAssistant:
             else:
                 self.recognizer.pause_threshold = 1
                 self.recognizer.adjust_for_ambient_noise(mic, duration=self.threshold_duration)
-                audio = self.recognizer.listen(mic, timeout=self.timeout)
+                audio = self.recognizer.listen(mic) #timeout=self.timeout)
                 text = self.recognize_speech(audio)
 
             if text == "para" or text == "adiós":
@@ -297,3 +356,14 @@ class VoiceAssistant:
                 if response:
                     self.speak(response)
         logging.error("[ASSITANT ACTIVATED] No action detected. Deactivating assistant...")
+
+    def toggle_tripod_mode(self, args):
+        res = self.tripod_mode.toggle()
+        if res:
+            return self.server_comm.call_server("speech", {
+                "text": "El modo trípode ha sido activado."}).get(
+                "response").get("result")
+
+        return self.server_comm.call_server("speech", {
+            "text": "El modo trípode ha sido desactivado."}).get(
+            "response").get("result")

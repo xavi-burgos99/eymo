@@ -83,5 +83,8 @@ class ServerCommunication:
                 logging.error("Failed to connect to the server. Please check the server configurations.")
                 logging.info(f"Retrying... ({attempt + 1}/3)")
                 time.sleep(1)
-
-        return "Ha habido un problema de conexion con el servidor. Por favor, intenta de nuevo."
+        return {
+            "response": {
+                "result": "No se puede conectar con el servidor. Por favor, verifique la configuración del servidor.",
+            }
+        }
