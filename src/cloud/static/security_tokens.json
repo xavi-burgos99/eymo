@@ -1,0 +1,12 @@
+{
+    "eymo_robot":{
+        "username": "eymo_robot",
+        "hashed_password": "$2b$12$t.5zr1WZx8aQajH3XjfZXudpnYXVWnUGwM/Zyw3IqqBp3JIcsf/bG",
+        "disabled": "false"
+    },
+    "eymo_administrator":{
+        "username": "eymo_administrator",
+        "hashed_password": "$2b$12$DFwyHtI5A2VX7cXn8kjOJe2dv2ffXRw406HP9uBO2VPMUwTWDjVdu",
+        "disabled": "false"
+    }
+}
