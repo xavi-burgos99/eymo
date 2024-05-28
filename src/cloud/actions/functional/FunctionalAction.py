@@ -20,6 +20,33 @@ class FunctionalAction(BaseAction, ABC):
         vertexai.init(project='eymo-ai-assistant', location="europe-west9")
         self.model = GenerativeModel(model_name="gemini-1.5-pro-preview-0409")
 
+    def _get_weather_tool(self) -> FunctionDeclaration:
+        function_name = "get_weather"
+        get_weather_func = FunctionDeclaration(
+            name=function_name,
+            description="Get the weather of a location for today or tomorrow",
+            parameters={
+                "type": "object",
+                "properties": {
+                    "option": {
+                        "type": "string",
+                        "description": "today/tomorrow"
+                    },
+                    "latitude": {
+                        "type": "string",
+                        "description": "Latitude of the location"
+                    },
+                    "longitude": {
+                        "type": "string",
+                        "description": "Longitude of the location"
+                    },
+                },
+                "required": ["option", "latitude", "longitude"]
+            },
+        )
+
+        return get_weather_func
+
     def _get_music_control_tool(self) -> FunctionDeclaration:
         function_name = "control_music"
         control_music_func = FunctionDeclaration(
@@ -86,7 +113,7 @@ class FunctionalAction(BaseAction, ABC):
         print(user_prompt_content)
 
         tool = Tool(
-            function_declarations=[self._get_reminder_tool(), self._get_music_control_tool()],
+            function_declarations=[self._get_reminder_tool(), self._get_music_control_tool(), self._get_weather_tool()]
         )
 
         response = self.model.generate_content(

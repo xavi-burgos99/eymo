@@ -43,9 +43,6 @@ Babel~=2.14.0
 click~=8.1.7
 httpcore~=1.0.5
 Pygments~=2.17.2
-idna~=3.7
-certifi~=2024.2.2
-pywin32
 matplotlib~=3.8.3
 overrides~=7.7.0
 scipy~=1.12.0
