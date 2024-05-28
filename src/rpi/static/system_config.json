@@ -12,8 +12,14 @@
     }
   },
   "server": {
-    "host": "https://34.163.47.11:7125",
-    "endpoint": "action/perform"
+    "host": "https://34.155.197.88:7125",
+    "endpoint": "action/perform",
+
+    "auth": {
+      "username": "",
+      "password": "",
+      "endpoint": "authentication"
+    }
   },
   "voice": {
     "voice_id": {
