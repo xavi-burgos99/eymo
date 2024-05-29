@@ -34,7 +34,9 @@ void loop(){
   if (serial.available()) {
     String mensaje = serial.readStringUntil('\n');  // Lee un mensaje hasta el caracter de nueva línea
     String *ordenes = split_string(mensaje, cap);
-    if(ordenes[0] == "CABEZA"){
+    if (ordenes[0] == "APAGAR")
+      error_S = SMM.Shutdown();
+    else if(ordenes[0] == "CABEZA"){
       if(ordenes[1] == "DERECHA")
         error_S = SMM.head_movement(-0.06);
       else
@@ -45,27 +47,27 @@ void loop(){
       if (ordenes[1] == "ADELANTE"){
         float speed = atof(ordenes[2].c_str());
         if(cap == 3)
-          error_M = MCM.move(speed,0);
+          error_M = MCM.move(speed,0, ODM.get_distances());
         else {
           float giro = atof(ordenes[2].c_str())/100;
-          error_M = MCM.move(speed,giro);
+          error_M = MCM.move(speed,giro, ODM.get_distances());
         }
       } 
       else if (ordenes[1] == "STOP"){
         if(cap == 2)
-          error_M = MCM.move(0,0);
+          error_M = MCM.move(0,0, ODM.get_distances());
         else{
           float giro = atof(ordenes[3].c_str())/100;
-          error_M = MCM.move(0,giro);
+          error_M = MCM.move(0,giro, ODM.get_distances());
         }
       } 
       else if (ordenes[1] == "ATRAS"){
         float speed = -(atof(ordenes[2].c_str()));
         if(cap == 3)
-          error_M = MCM.move(speed,0);
+          error_M = MCM.move(speed,0, ODM.get_distances());
         else {
           float giro = atof(ordenes[3].c_str())/100;
-          error_M = MCM.move(speed,giro);
+          error_M = MCM.move(speed,giro, ODM.get_distances());
         }
       }
     }
