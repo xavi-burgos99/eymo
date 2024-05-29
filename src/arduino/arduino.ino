@@ -12,6 +12,8 @@ void setup(){
 }
 /**
   * Ordenes a recibir:
+  * * Apagado, servomotor a posicion inicial:
+  * * * APAGAR
   * * Orientación cabeza: 
   * * * CABEZA,DERECHA
   * * * CABEZA,IZQUIERDA
