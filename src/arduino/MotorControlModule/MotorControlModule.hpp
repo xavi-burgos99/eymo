@@ -10,10 +10,12 @@
 class MotorControlModule {
   public:
     MotorControlModule(int motorM1, int motorM2, int motorE1, int motorE2);
-    bool move(int speed, int direction); // direction: -1 = left, 0 = straigth on, 1 = right
+    bool move(int direction);
+    bool move(int speed, int direction, float *sensorDist);
     
   private:
     bool _soft_speed_update(int speed, float alpha);
+    bool _checkObstacles(float *sensorDist, int &speed);
     bool _move_motor(int motorM, int motorE, int speed, int direction); // direction: 0 = forward, 1 = backward
     bool _coerce_speed_boundaries();
     bool _stop();
@@ -46,24 +48,6 @@ MotorControlModule::MotorControlModule(int motorM1, int motorM2, int motorE1, in
     pinMode(_motorE2, OUTPUT);
 }
 
-/*
-
-bool MotorControlModule::move(int speed, int direction) {
-    // direction: -1 = left, 0 = straigth on, 1 = right
-    _soft_speed_update(speed, 0.8);
-    if(direction == 0){
-        _move_straight();
-    }else{
-        _turn(direction);
-    }
-    speed1 = _speed;
-    speed2 = _speed;
-    
-    _move_motor(_motorM1, _motorE1, _speed, 0);
-    _move_motor(_motorM2, _motorE2, _speed, 0);
-}
-*/
-
 bool MotorControlModule::_compute_speed_and_direction(int speed, int direction,
                                                       int &speed1, int &speed2,
                                                       int &motor_direction1, int &motor_direction2) {
@@ -92,8 +76,22 @@ bool MotorControlModule::_compute_speed_and_direction(int speed, int direction,
     }
 }
 
-bool MotorControlModule::move(int speed, int direction) {
+bool MotorControlModule::_checkObstacles(float *sensorDist, int &speed) {
+    if (sensorDist[0] < 5 or sensorDist[1] < 5){
+        _stop();
+    }
+    if (sensorDist[0] < 10 or sensorDist[1] < 10){
+        speed = (int) 0.25 * speed;
+    }
+    if (sensorDist[0] < 15 or sensorDist[1] < 15){
+        speed = (int) 0.75 * speed;
+    }
+}
+
+bool MotorControlModule::move(int speed, int direction, float *sensorDist) {
+    _checkObstacles(sensorDist, speed);
     _soft_speed_update(speed, 0.8);
+
     int speed1 = 0;
     int speed2 = 0;
     int motor_direction1 = 0;
@@ -115,6 +113,7 @@ bool MotorControlModule::_move_motor(int motorM, int motorE, int speed, int moto
 }
 
 bool MotorControlModule::_stop() {
+    _speed = 0;
     _move_motor(_motorM1, _motorE1, 0, 0);
     _move_motor(_motorM2, _motorE2, 0, 0);
 }
