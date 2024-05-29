@@ -10,7 +10,7 @@
 class MotorControlModule {
   public:
     MotorControlModule(int motorM1, int motorM2, int motorE1, int motorE2);
-    bool move(int direction);
+    // bool move(int direction);
     bool move(int speed, int direction, float *sensorDist);
     
   private:
@@ -46,6 +46,21 @@ MotorControlModule::MotorControlModule(int motorM1, int motorM2, int motorE1, in
     pinMode(_motorM2, OUTPUT);
     pinMode(_motorE1, OUTPUT);
     pinMode(_motorE2, OUTPUT);
+}
+
+bool MotorControlModule::move(int speed, int direction, float *sensorDist) {
+    _checkObstacles(sensorDist, speed);
+    _soft_speed_update(speed, 0.8);
+
+    int speed1 = 0;
+    int speed2 = 0;
+    int motor_direction1 = 0;
+    int motor_direction2 = 0;
+
+    _compute_speed_and_direction(_speed, direction, speed1, speed2, motor_direction1, motor_direction2);
+    
+    _move_motor(_motorM1, _motorE1, speed1, motor_direction1);
+    _move_motor(_motorM2, _motorE2, speed2, motor_direction2);
 }
 
 bool MotorControlModule::_compute_speed_and_direction(int speed, int direction,
@@ -88,20 +103,6 @@ bool MotorControlModule::_checkObstacles(float *sensorDist, int &speed) {
     }
 }
 
-bool MotorControlModule::move(int speed, int direction, float *sensorDist) {
-    _checkObstacles(sensorDist, speed);
-    _soft_speed_update(speed, 0.8);
-
-    int speed1 = 0;
-    int speed2 = 0;
-    int motor_direction1 = 0;
-    int motor_direction2 = 0;
-
-    _compute_speed_and_direction(_speed, direction, speed1, speed2, motor_direction1, motor_direction2);
-    
-    _move_motor(_motorM1, _motorE1, speed1, motor_direction1);
-    _move_motor(_motorM2, _motorE2, speed2, motor_direction2);
-}
 
 bool MotorControlModule::_move_motor(int motorM, int motorE, int speed, int motor_direction) {
     if(motor_direction == 0){  // forward
