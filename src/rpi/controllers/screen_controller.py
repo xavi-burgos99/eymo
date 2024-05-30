@@ -7,8 +7,16 @@ import queue
 import time
 import logging
 from pynput import keyboard
+import numpy as np
+
+from services.models.screen_animations import ScreenAnimations
+
+SCREEN_ANIMATIONS = ScreenAnimations.get_list()
 
 class ScreenController:
+    ICON_WIDTH = 64
+    ICON_HEIGHT = 64
+    
     def __init__(self, config: dict):
         self._config = config
         self._window = None
@@ -20,8 +28,14 @@ class ScreenController:
         self._width = int(config["width"])
         self._height = int(config["height"])
         self._scale = int(config["scale"])
-        self._test_i = 0
-        self._test_direction = 1
+        
+        self._icon = None
+        self._icon_data = None
+        self._icon_frame = 0
+        self._icon_frames = 0
+        
+        self._icon_x = int((self._width - self.ICON_WIDTH) / 2)
+        self._icon_y = int((self._height - self.ICON_HEIGHT) / 2)
         
         self._window_visible = True
         
@@ -95,26 +109,6 @@ class ScreenController:
                 keys["ctrl"] = False
         listener = keyboard.Listener(on_press=lambda key: press_start(key, keys), on_release=lambda key: press_end(key, keys))
         listener.start()
-
-    def test(self):
-        """Draw a circle in the middle of the screen that moves from left to right infinitely."""
-        if self._window is None:
-            raise Exception("No screen available")
-        if self._test_direction == 1:
-            self._test_i += 3
-        else:
-            self._test_i -= 3
-        self.clear()
-        draw = ImageDraw.Draw(self._image)
-        padding = 5
-        y = self._height // 2
-        r = self._height // 4
-        if self._test_i >= self._width - padding - r:
-            self._test_direction = -1
-        elif self._test_i <= padding + r:
-            self._test_direction = 1
-        x = self._test_i
-        draw.ellipse((x - r, y - r, x + r, y + r), fill=255)
         
     def standby(self, x = 0.5, y = 0.5, r = 0.33):
         """Draw a rectangle in the middle of the screen."""
@@ -125,6 +119,8 @@ class ScreenController:
             raise Exception("Invalid coordinates")
         if r <= 0:
             raise Exception("Invalid radius")
+        self._icon = None
+        self._icon_data = None
         x = int(x * (self._width - padding * 2))
         y = int(y * (self._height - padding * 2))
         r = int(r * ((self._height - padding * 2) // 2))
@@ -144,17 +140,54 @@ class ScreenController:
         """Clear the screen."""
         if self._window is None:
             raise Exception("No screen available")
-        self._image = Image.new("1", (128, 64), 0)
+        self._image = Image.new("1", (self._width, self._height), 0)
         
     def _resize(self, image):
         return image.resize((image.width * self._scale, image.height * self._scale))
+    
+    def icon(self, name: str):
+        """Draw an icon on the screen."""
+        if self._window is None:
+            raise Exception("No screen available")
+        if name == self._icon:
+            self._draw_icon()
+            return
+        if name not in SCREEN_ANIMATIONS:
+            raise Exception(f"Invalid icon name: {name}")
+        data = ScreenAnimations.get(name)
+        if data is None:
+            raise Exception(f"Invalid icon data: {name}")
+        self._icon = name
+        self._icon_data = data
+        self._icon_frame = 0
+        self._icon_frames = len(data)
+        
+    def _byte_to_bits(self, byte):
+        return [int(bit) for bit in f"{byte:08b}"]
+        
+    def _draw_icon(self):
+        if self._icon_data is None:
+            return
+        self._icon_frame += 1
+        if self._icon_frame >= self._icon_frames:
+            self._icon_frame = 0
+        frame = self._icon_data[self._icon_frame]
+        if len(frame) != 512:
+            logging.error(f"Frame size incorrect: {len(frame)} bytes")
+            return
+        data = np.array([self._byte_to_bits(byte) for byte in frame], dtype=np.uint8).reshape((64, 64))
+        self.clear()
+        draw = ImageDraw.Draw(self._image)
+        for y, row in enumerate(data):
+            for x, bit in enumerate(row):
+                if bit:
+                    draw.point((x + self._icon_x, y + self._icon_y), fill=255)
     
     def update(self):
         """Update the screen with the current image."""
         if self._window is None:
             raise Exception("No screen available")
         if self._testMode:
-            # Colocar la tarea de actualización en la cola
             self._queue.put(self._update_canvas)
             self._window.attributes("-topmost", True)
         else:

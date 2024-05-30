@@ -12,7 +12,6 @@ class CameraController:
 
     def get_frame(self, base64_encode=True):
         result, image = self.cam.read()
-        logging.info("Reading camera image...")
         if not result:
             logging.error("Could not read camera image.", exc_info=True)
             return None

@@ -15,11 +15,11 @@ from datetime import datetime
 from services.server_communication import ServerCommunication
 from services.models.audio_player import AudioPlayer
 from services.tripod_mode import TripodMode
-from services.screen import Screen
+from services.screen import Screen, ScreenMode
 from services.models.speaker import Speaker
 
-from rpi.controllers.camera_controller import CameraController
-from rpi.services.models.location import Location
+from controllers.camera_controller import CameraController
+from services.models.location import Location
 
 
 def load_responses(filepath):
@@ -65,6 +65,7 @@ class VoiceAssistant:
         reminder_thread.start()
 
     def speak(self, text, tts=False):
+        self.screen.mode(ScreenMode.SPEAKING)
         if self.player and self.player.is_playing:
             self.player.set_volume(40)
             time.sleep(1)
@@ -73,6 +74,7 @@ class VoiceAssistant:
             self.player.set_volume(100)
         else:
             self.speaker.play(text, tts)
+        self.screen.mode(ScreenMode.STANDBY)
 
     def get_help(self, args):
         return self.server_comm.call_server("speech", {
@@ -140,6 +142,7 @@ class VoiceAssistant:
     def control_music(self, args):
         command = args.get('command')
         if command == "pause":
+            self.screen.mode(ScreenMode.STANDBY)
             if self.speaker.is_playing:
                 self.speaker.stop()
             if self.player and (self.player.is_playing or self.player.paused):
@@ -149,6 +152,7 @@ class VoiceAssistant:
                     "text": "Vale",
                 }).get("response").get("result")
         elif command == "play":
+            self.screen.mode(ScreenMode.MUSIC)
             if args.get('song_name'):
                 return self.play_song(args.get('song_name'))
             elif self.player:
@@ -158,6 +162,7 @@ class VoiceAssistant:
                     "text": "Vale, la reanudo.",
                 }).get("response").get("result")
         elif command == "stop":
+            self.screen.mode(ScreenMode.STANDBY)
             if self.speaker.is_playing:
                 self.speaker.stop()
             if self.player:
@@ -181,6 +186,7 @@ class VoiceAssistant:
                 }).get("response").get("result")
 
     def get_image_details(self, prompt: str):
+        logging.info("Getting image details...")
         return self.server_comm.call_server("gemini", {
             "prompt": prompt,
             "image": self.camera_controller.get_frame(),
@@ -321,6 +327,7 @@ class VoiceAssistant:
             return None
 
     def activate_assistant(self, mic, after_pattern=None):
+        self.screen.mode(ScreenMode.RECOGNIZING)
         logging.info("[ASSISTANT ACTIVATED] Keyword detected. Activating assistant.")
         if not after_pattern:
             self.speak(self.server_comm.call_server("gemini", {
@@ -341,6 +348,7 @@ class VoiceAssistant:
                 text = self.recognize_speech(audio)
 
             if text == "para" or text == "adiós":
+                self.screen.mode(ScreenMode.STANDBY)
                 logging.info("[ASSISTANT ACTIVATED] Deactivating assistant...")
                 if self.player.is_playing:
                     self.player.stop()
@@ -352,6 +360,7 @@ class VoiceAssistant:
                 response = self.respond(text)
                 if response:
                     self.speak(response)
+        self.screen.mode(ScreenMode.STANDBY)
         logging.error("[ASSITANT ACTIVATED] No action detected. Deactivating assistant...")
 
     def toggle_tripod_mode(self, args):

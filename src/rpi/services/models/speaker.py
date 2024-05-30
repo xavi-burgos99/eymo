@@ -25,7 +25,7 @@ def suppress_stdout():
             sys.stdout = old_stdout
 
 class Speaker:
-    def __init__(self):
+    def __init__(self, config: dict):
         pygame.mixer.init()
         self.pitch = config['pitch']
         self.current_file = None

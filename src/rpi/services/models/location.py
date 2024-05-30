@@ -1,7 +1,8 @@
 import json
 import urllib3
 
-import requests
+import socket
+import logging
 
 
 class Location:
@@ -24,5 +25,8 @@ class Location:
         return self.location_data
 
     def get_ip(self):
-        response = requests.get('https://api64.ipify.org?format=json').json()
-        return response["ip"]
+        """Get the IP address of the device in format string."""
+        hostname = socket.gethostname()
+        ip_address = socket.gethostbyname(hostname)
+        logging.info(f"Connected with IP address: {ip_address}")
+        return ip_address
