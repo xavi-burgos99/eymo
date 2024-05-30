@@ -112,6 +112,7 @@ pypinyin==0.51.0
 pysbd==0.3.4
 python-crfsuite==0.9.10
 python-dateutil==2.9.0.post0
+python-dotenv==1.0.1
 python-vlc==3.0.20123
 pyttsx3==2.90
 pytz==2024.1

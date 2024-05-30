@@ -2,17 +2,17 @@
   "arduino": {
 
   },
+  "vision": {
+    "model_path": "static/tf/vision.tflite",
+    "threshold": 0.5
+  },
   "screen": {
     "width": 128,
     "height": 64,
-    "scale": 2,
-    "vision": {
-      "model_path": "static/tf/vision.tflite",
-      "threshold": 0.5
-    }
+    "scale": 2
   },
   "server": {
-    "host": "https://34.163.254.245:7125",
+    "host": "https://eymo.dzin.es:7125",
     "endpoint": "action/perform",
     "auth": {
         "endpoint": "authentication"
@@ -31,7 +31,7 @@
     "queue_timeout": 10,
     "pitch": 6,
     "listen_timeout": 10,
-    "demo_mode": true
+    "demo_mode": false
   },
   "camera": {
     "cam_port": 0

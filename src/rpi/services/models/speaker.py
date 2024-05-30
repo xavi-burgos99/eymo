@@ -36,14 +36,6 @@ class Speaker:
             self.engine.setProperty('voice', config['voice_id']['win'])
         self.engine.setProperty('rate', config['rate'])
         
-        tts_model_path = "static/tts/model_file.pth.tar"
-        tts_config_path = "static/tts/config.json"
-        tts_language_ids = "static/tts/language_ids.json"
-        tts_speaker_ids = "static/tts/speaker_ids.json"
-        
-        #with suppress_stdout():
-        #    self.synthesizer = Synthesizer(tts_model_path, tts_config_path, tts_speaker_ids, tts_language_ids)
-
     def _cleanup(self):
         if self.current_file:
             pygame.mixer.music.stop()
@@ -72,10 +64,6 @@ class Speaker:
 
     def play(self, audio: str, tts: bool = False):
         self._cleanup()  # Cleanup any previous audio
-        
-        #if tts is True:
-        #    logging.info("Converting text to speech")
-        #    audio = self.text2speech(audio)
         
         with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
             decoded_base64 = base64.b64decode(audio)

@@ -2,7 +2,7 @@ import logging
 import os
 import threading
 
-from rpi.controllers.camera_controller import CameraController
+from controllers.camera_controller import CameraController
 from services.tripod_mode import TripodMode
 from services.voice_assistant import VoiceAssistant
 from controllers.arduino_controller import ArduinoController
@@ -81,13 +81,8 @@ def initialize_cloud_components(config, components = {}):
     components['server_comm'] = server_comm
     
     logging.info("Launching the voice assistant service...")
-    voice_assistant = VoiceAssistant(config['voice'], server_comm, screen, tripod_mode, camera_controller)
-
-    # Update the demo mode configuration
-    if config.get('voice').get('demo_mode'):
-        logging.info("Demo mode was enabled. Disabling demo mode for next execution...")
-        config['voice']['demo_mode'] = False
-        save_system_configurations(config)
+    voice_assistant = VoiceAssistant(config['voice'], components['server_comm'], components['screen'], components['tripod_mode'], components['camera_controller'])
+    components['voice_assistant'] = voice_assistant
 
     return components
 
@@ -109,6 +104,16 @@ def main():
         return
 
     components = initialize_cloud_components(config, components)
+    
+    if config.get('voice').get('demo_mode'):
+        logging.info("Demo mode enabled. Disabling for future runs...")
+        config['voice']['demo_mode'] = False
+        save_system_configurations(config)
+    
+    
+    # -------------------------------------------------
+    # -----  Start Execution  ---------------------------
+    # -----------------------------------------------------
     
     screen = components['screen']
     voice_assistant = components['voice_assistant']

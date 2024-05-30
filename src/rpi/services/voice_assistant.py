@@ -27,8 +27,7 @@ def load_responses(filepath):
 
 
 class VoiceAssistant:
-    def __init__(self, config: dict, server_communication: ServerCommunication, screen: Screen, tripod_mode: TripodMode,
-                 camera_controller: CameraController = None):
+    def __init__(self, config: dict, server_communication: ServerCommunication, screen: Screen, tripod_mode: TripodMode, camera_controller: CameraController = None):
         self.recognizer = sr.Recognizer()
         self.server_comm = server_communication
         self.screen = screen
@@ -62,7 +61,6 @@ class VoiceAssistant:
         self.reminders = []
 
         if config.get("demo_mode"):
-            self.demo = True
             self.demo_mode()
 
             # Uncomment the following line to run the voice assistant just in demo mode and exit program
