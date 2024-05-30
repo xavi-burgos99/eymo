@@ -13,6 +13,7 @@ class ObstacleDetectionModule{
     public:
         SensorState IRState, BackState;
         ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig);
+        float* get_distances();
     private:
         // Sensor pins
         int _pinIR, _BackEcho, _BackTrig;
@@ -119,4 +120,9 @@ float ObstacleDetectionModule::detection_mesurements(bool type, long US_raw, flo
         return (US_raw/2) / 29.1;
     else
         return (6787.0f /IR_raw - 3.0f) - 4.0f;
+}
+
+float* ObstacleDetectionModule::get_distances() {
+    float shutdown[2] = {IRDistance, _BackDistance};
+    return shutdown;
 }

@@ -17,7 +17,7 @@ public:
 	bool Shutdown();
 private:
   	Servo servo;
-	int _initialAngle = 30; // Posición inicial del servomotor (en grados)
+	int _initialAngle = 90; // Posición inicial del servomotor (en grados)
 	int _moveRange = 30; // Rango de movimiento del servomotor (en grados)
 	int _actualAngle = 0; // Posición actual del servomotor (en grados)
 
