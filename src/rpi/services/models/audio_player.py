@@ -81,7 +81,9 @@ class AudioPlayer:
             self.current_index = -1
 
         if self.current_index < len(self.playlist):
+            logging.info(f"[PLAYER] Removing {self.current_index} from playlist")
             self.playlist.pop(self.current_index)
+            self.current_index -= 1
 
     def get_playlist(self):
         return self.playlist
@@ -89,3 +91,13 @@ class AudioPlayer:
     def set_volume(self, volume):
         self.player.audio_set_volume(volume)
         logging.info(f"[PLAYER] Volume set to {volume}")
+
+    def clear_playlist(self):
+        self.playlist = []
+        self.current_index = -1
+
+        self.is_playing = False
+        self.paused = False
+        self.stop_requested = False
+
+        logging.info("[PLAYER] Playlist cleaned")

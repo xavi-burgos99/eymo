@@ -6,11 +6,9 @@ import sys
 import logging
 import platform
 import pyttsx3
-from espeakng import ESpeakNG
 from mutagen.mp3 import MP3
 from pydub import AudioSegment
 
-from TTS.utils.synthesizer import Synthesizer
 import soundfile as sf
 from contextlib import contextmanager
 
@@ -43,8 +41,8 @@ class Speaker:
         tts_language_ids = "static/tts/language_ids.json"
         tts_speaker_ids = "static/tts/speaker_ids.json"
         
-        with suppress_stdout():
-            self.synthesizer = Synthesizer(tts_model_path, tts_config_path, tts_speaker_ids, tts_language_ids)
+        #with suppress_stdout():
+        #    self.synthesizer = Synthesizer(tts_model_path, tts_config_path, tts_speaker_ids, tts_language_ids)
 
     def _cleanup(self):
         if self.current_file:
@@ -75,9 +73,9 @@ class Speaker:
     def play(self, audio: str, tts: bool = False):
         self._cleanup()  # Cleanup any previous audio
         
-        if tts is True:
-            logging.info("Converting text to speech")
-            audio = self.text2speech(audio)
+        #if tts is True:
+        #    logging.info("Converting text to speech")
+        #    audio = self.text2speech(audio)
         
         with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as temp_file:
             decoded_base64 = base64.b64decode(audio)

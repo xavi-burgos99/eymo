@@ -5,15 +5,18 @@
   "screen": {
     "width": 128,
     "height": 64,
-    "scale": 2
-  },
-  "vision": {
-    "model_path": "static/tf/vision.tflite",
-    "threshold": 0.5
+    "scale": 2,
+    "vision": {
+      "model_path": "static/tf/vision.tflite",
+      "threshold": 0.5
+    }
   },
   "server": {
-    "host": "https://eymo.dzin.es:7125",
-    "endpoint": "action/perform"
+    "host": "https://34.163.254.245:7125",
+    "endpoint": "action/perform",
+    "auth": {
+        "endpoint": "authentication"
+    }
   },
   "voice": {
     "voice_id": {
@@ -21,12 +24,14 @@
       "mac": "com.apple.speech.synthesis.voice.jorge"
     },
     "rate": 150,
-    "pattern": "^(primo|eymo|eimo|heimo|heymo|hemo|imo)\\b",
+    "pattern": "^(eymo|eimo|heimo|heymo|hemo|imo|inma|e inma|eima|eimos|oímos)\\b",
     "threshold_duration": 0.4,
     "activated_timeout": 30,
     "queue_size": 2,
     "queue_timeout": 10,
-    "pitch": 6
+    "pitch": 6,
+    "listen_timeout": 10,
+    "demo_mode": true
   },
   "camera": {
     "cam_port": 0

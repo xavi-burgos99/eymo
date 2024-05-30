@@ -3,8 +3,6 @@ import logging
 import threading
 
 import cv2
-import numpy as np
-
 
 class CameraController:
     def __init__(self, config: dict):
@@ -17,7 +15,7 @@ class CameraController:
             return None
         if base64_encode:
             retval, buffer = cv2.imencode('.png', image)
-            png_as_text = base64.b64encode(buffer)
+            png_as_text = base64.b64encode(buffer).decode('utf-8')
             return png_as_text
         return image
 
