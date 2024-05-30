@@ -2,7 +2,7 @@ import logging
 import os
 import threading
 
-from controllers.camera_controller import CameraController
+from rpi.controllers.camera_controller import CameraController
 from services.tripod_mode import TripodMode
 from services.voice_assistant import VoiceAssistant
 from controllers.arduino_controller import ArduinoController
@@ -10,7 +10,7 @@ from controllers.screen_controller import ScreenController
 from services.server_communication import ServerCommunication
 from services.screen import Screen
 from utils.network_utils import check_network_connection
-from configs.system_config import load_system_configurations
+from configs.system_config import load_system_configurations, save_system_configurations
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
@@ -48,7 +48,7 @@ def setup_logging() -> None:
         logger.addHandler(console_handler)
 
 
-def initialize_components() -> tuple[ArduinoController, ScreenController, ServerCommunication, VoiceAssistant, CameraController]:
+def initialize_components() -> tuple[ArduinoController, Screen, ServerCommunication, VoiceAssistant, CameraController]:
     """
     Initialize all components required for the robot's operation.
     :return: Tuple of components (ArduinoController, ScreenController, ServerCommunication, VoiceAssistant)
@@ -76,6 +76,12 @@ def initialize_components() -> tuple[ArduinoController, ScreenController, Server
 
     logging.info("Launching the voice assistant service...")
     voice_assistant = VoiceAssistant(config['voice'], server_comm, screen, tripod_mode, camera_controller)
+
+    # Update the demo mode configuration
+    if config.get('voice').get('demo_mode'):
+        logging.info("Demo mode was enabled. Disabling demo mode for next execution...")
+        config['voice']['demo_mode'] = False
+        save_system_configurations(config)
 
     return arduino, screen, server_comm, voice_assistant, camera_controller
 
