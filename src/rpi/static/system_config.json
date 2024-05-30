@@ -15,7 +15,7 @@
     "host": "https://eymo.dzin.es:7125",
     "endpoint": "action/perform",
     "auth": {
-        "endpoint": "authentication"
+      "endpoint": "authentication"
     }
   },
   "voice": {

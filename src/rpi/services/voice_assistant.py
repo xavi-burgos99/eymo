@@ -70,6 +70,7 @@ class VoiceAssistant:
         reminder_thread.start()
 
     def speak(self, text, tts=False):
+        logging.info(f"[SPEAKER] Speaking: {text}")
         self.screen.mode(ScreenMode.SPEAKING)
         if self.player and self.player.is_playing:
             self.player.set_volume(40)
@@ -78,8 +79,14 @@ class VoiceAssistant:
             time.sleep(audio_length)
             self.player.set_volume(100)
         else:
-            self.speaker.play(text, tts)
-        self.screen.mode(ScreenMode.STANDBY)
+            audio_lenght = self.speaker.play(text, tts)
+            time.sleep(audio_lenght)
+
+        logging.info(f"{self.player.is_playing}")
+        if self.player.is_playing and not self.player.paused:
+            self.screen.mode(ScreenMode.MUSIC)
+        else:
+            self.screen.mode(ScreenMode.STANDBY)
 
     def get_help(self, args):
         return self.server_comm.call_server("speech", {
@@ -162,7 +169,6 @@ class VoiceAssistant:
                     "text": "Vale",
                 }).get("response").get("result")
         elif command == "play":
-            self.screen.mode(ScreenMode.MUSIC)
             if args.get('song_name'):
                 return self.play_song(args.get('song_name'))
             elif self.player:
@@ -347,7 +353,7 @@ class VoiceAssistant:
             return None
 
     def activate_assistant(self, mic, after_pattern=None):
-        self.screen.mode(ScreenMode.RECOGNIZING)
+        # self.screen.mode(ScreenMode.RECOGNIZING)
         logging.info("[ASSISTANT ACTIVATED] Keyword detected. Activating assistant.")
         if not after_pattern:
             self.speak(self.server_comm.call_server("gemini", {
@@ -368,7 +374,7 @@ class VoiceAssistant:
                 text = self.recognize_speech(audio)
 
             if text == "para" or text == "adiós":
-                self.screen.mode(ScreenMode.STANDBY)
+                # self.screen.mode(ScreenMode.STANDBY)
                 logging.info("[ASSISTANT ACTIVATED] Deactivating assistant...")
                 if self.player.is_playing:
                     self.player.stop()
@@ -380,7 +386,7 @@ class VoiceAssistant:
                 response = self.respond(text)
                 if response:
                     self.speak(response)
-        self.screen.mode(ScreenMode.STANDBY)
+        # self.screen.mode(ScreenMode.STANDBY)
         logging.error("[ASSITANT ACTIVATED] No action detected. Deactivating assistant...")
 
     def toggle_tripod_mode(self, args):
