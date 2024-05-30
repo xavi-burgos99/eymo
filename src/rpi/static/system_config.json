@@ -12,12 +12,10 @@
     }
   },
   "server": {
-    "host": "https://34.155.197.88:7125",
+    "host": "https://34.155.179.218:7125",
     "endpoint": "action/perform",
 
     "auth": {
-      "username": "",
-      "password": "",
       "endpoint": "authentication"
     }
   },

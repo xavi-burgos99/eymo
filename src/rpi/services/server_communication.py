@@ -1,10 +1,13 @@
 import time
+import os
 from typing import Any
 
 import requests
 import logging
 
 from requests import RequestException
+from dotenv import load_dotenv
+from pathlib import Path
 
 from services.models.server_input import ServerIn
 
@@ -15,9 +18,13 @@ class ServerCommunication:
         self.endpoint = config['endpoint']
 
         self.auth_endpoint = config.get("auth").get("endpoint")
+
+        dotenv_path = Path('static/.env')
+        load_dotenv(dotenv_path=dotenv_path)
+
         self.auth_data = {
-            'username': config.get("auth").get("username"),
-            'password': config.get("auth").get("password"),
+            'username': str(os.getenv("API_USERNAME")),
+            'password': str(os.getenv("API_PASSWORD")),
         }
 
         self.token = None
@@ -39,7 +46,8 @@ class ServerCommunication:
         if response.status_code == 200:
             self.token = response.json()['access_token']
         else:
-            logging.error(f"Failed to get token from the server. Status code: {response.status_code}. Reason: {response.reason}")
+            logging.error(
+                f"Failed to get token from the server. Status code: {response.status_code}. Reason: {response.reason}")
             self.token = None
 
     def call_server(self, action: str, params: dict) -> str | Any:
