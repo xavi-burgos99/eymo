@@ -19,9 +19,10 @@ class Location:
             response = json.loads(response.data.decode('utf-8'))
             self.location_data = {
                 "city": response.get("city"),
-                "lat": response.get("latitude"),
-                "long": response.get("longitude")
+                "lat": 41.54329,
+                "long": 2.10942
             }
+
         return self.location_data
 
     def get_ip(self):
