@@ -6,27 +6,26 @@ enum SensorState {
     Close = 2,
     Warning = 3,
     Dangerous = 4,
-
 };
 
 class ObstacleDetectionModule{
     public:
+        // States for each sensor
         SensorState IRState, BackState;
+        // Front sensor value
+        float IRDistance;
+        // Back sensor value
+        float BackDistance;
+
         ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig);
         void update();
-		float readInfrared(int pin);
-		float UltraSonicMetrics(int trigger, int echo);
-        float detection_mesurements(bool type, long US_raw, float IR_raw);
+
     private:
         // Sensor pins
         int _pinIR, _BackEcho, _BackTrig;
-        // Front sensors
-        float IRDistance;
 
-        // Back sensors
-        float _BackDistance;
-
-
+		float readInfrared(int pin);
+		float UltraSonicMetrics(int trigger, int echo);
 };
 
 ObstacleDetectionModule::ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig) {
@@ -37,14 +36,20 @@ ObstacleDetectionModule::ObstacleDetectionModule(int pinIR, int BackEcho, int Ba
 
     IRDistance = 0.0f;
 
-    _BackDistance = 0.0f;
+    BackDistance = 0.0f;
     IRState = Initiating;
     BackState = Initiating;
+
+    // Inicializa el pin Trigger como salida
+    pinMode(BackTrig, OUTPUT);
+    // Inicializa el pin Echo como entrada
+    pinMode(BackEcho, INPUT);
+    pinMode(pinIR, INPUT);
 }
 
 void ObstacleDetectionModule::update() {
     IRDistance = readInfrared(_pinIR);
-    _BackDistance = UltraSonicMetrics(_BackTrig, _BackEcho);
+    BackDistance = UltraSonicMetrics(_BackTrig, _BackEcho);
 
     if (IRDistance < 10) {
         IRState = Dangerous;
@@ -59,13 +64,13 @@ void ObstacleDetectionModule::update() {
         IRState = Safe;
     }
 
-    if (_BackDistance < 10) {
+    if (BackDistance < 10) {
         BackState = Dangerous;
     }
-    else if (_BackDistance < 20) {
+    else if (BackDistance < 20) {
         BackState = Warning;
     }
-    else if (_BackDistance < 30) {
+    else if (BackDistance < 30) {
         BackState = Close;
     }
     else {
@@ -74,22 +79,18 @@ void ObstacleDetectionModule::update() {
 }
 
 float ObstacleDetectionModule::readInfrared(int pin) {
-    //? Read sensor value
+    // Read sensor value
     uint16_t sensorValue_raw = 0;
     float sensorValue = 0.0f;
     sensorValue_raw = analogRead(pin);
 
-    //* print the results to the Serial Monitor:
-    // Serial.print("Infrared sensor value: ", sensorValue_raw);
-
-    //*  filter unstable values
+    //  filter unstable values
     if (sensorValue_raw < 0) {
         return -1;
     }
 
     // transform the sensor value to distance in cm
-    sensorValue = detection_mesurements(false, 0, (float)sensorValue_raw);
-
+    sensorValue = (6787.0f /sensorValue_raw - 3.0f) - 4.0f;
     return sensorValue;
 }
 
@@ -100,23 +101,13 @@ float ObstacleDetectionModule::UltraSonicMetrics(int trigger, int echo) {
     // Emit the pulse
     digitalWrite(trigger, LOW);
     delayMicroseconds(2);
-    digitalWrite(trigger, HIGH);
 
     // Read the pulse data
+    digitalWrite(trigger, HIGH);
     delayMicroseconds(10);
     digitalWrite(trigger, LOW);
+
     duration = pulseIn(echo, HIGH);
-
-    // transform the pulse data to distance in cm
-    distance = detection_mesurements(true, duration, 0.0f);
-
+    distance = duration * 0.034 / 2;
     return distance;
-
-}
-
-float ObstacleDetectionModule::detection_mesurements(bool type, long US_raw, float IR_raw){
-    if(type)
-        return (US_raw/2) / 29.1;
-    else
-        return (6787.0f /IR_raw - 3.0f) - 4.0f;
 }
