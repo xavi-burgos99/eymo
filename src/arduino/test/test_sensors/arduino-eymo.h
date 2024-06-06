@@ -6,7 +6,7 @@
 #define US1Trig 3
 #define US2Echo 4
 #define US2Trig 5
-#define LINE 7
+#define FLOOR 7
 
 // IR Pins
 #define IREcho A0

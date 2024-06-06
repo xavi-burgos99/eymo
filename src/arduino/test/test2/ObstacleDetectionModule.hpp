@@ -4,34 +4,40 @@
 class ObstacleDetectionModule{
     public:
         // States for each sensor
-        SensorState IRState, BackState, WorstState;
+        SensorState IRState, BackState, FloorState, WorstState;
         // Front sensor value
         float IRDistance;
         // Back sensor value
         float BackDistance;
+        // Front floor sensor value
+        bool FloorDetected;
 
-        ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig);
+        ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig, int pinFloor);
         void update();
 
     private:
         // Sensor pins
-        int _pinIR, _BackEcho, _BackTrig;
+        int _pinIR, _BackEcho, _BackTrig, _pinFloor;
 
 		float readInfrared(int pin);
-		float UltraSonicMetrics(int trigger, int echo);
+		float readUltrasonic(int trigger, int echo);
+        bool readFloor(int pin);
 };
 
-ObstacleDetectionModule::ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig) {
+ObstacleDetectionModule::ObstacleDetectionModule(int pinIR, int BackEcho, int BackTrig, int pinFloor) {
 
     _pinIR = pinIR;
     _BackEcho = BackEcho;
     _BackTrig = BackTrig;
+    _pinFloor = pinFloor;
 
     IRDistance = 0.0f;
-
     BackDistance = 0.0f;
+    FloorDetected = true;
+
     IRState = Initiating;
     BackState = Initiating;
+    FloorState = Initiating;
     WorstState = Initiating;
 
     // Inicializa el pin Trigger como salida
@@ -39,11 +45,13 @@ ObstacleDetectionModule::ObstacleDetectionModule(int pinIR, int BackEcho, int Ba
     // Inicializa el pin Echo como entrada
     pinMode(BackEcho, INPUT);
     pinMode(pinIR, INPUT);
+    pinMode(pinFloor, INPUT);
 }
 
 void ObstacleDetectionModule::update() {
     IRDistance = readInfrared(_pinIR);
-    BackDistance = UltraSonicMetrics(_BackTrig, _BackEcho);
+    BackDistance = readUltrasonic(_BackTrig, _BackEcho);
+    FloorDetected = readFloor(_pinFloor);
 
     if (IRDistance < 10) {
         IRState = Dangerous;
@@ -70,7 +78,13 @@ void ObstacleDetectionModule::update() {
     else {
         BackState = Safe;
     }
-    WorstState = max(BackState, IRState);
+    if (FloorDetected) { 
+        FloorState = Safe;
+    }
+    else {
+        FloorState = Dangerous;
+    }
+    WorstState = max(max(BackState, IRState), FloorState);
 }
 
 float ObstacleDetectionModule::readInfrared(int pin) {
@@ -89,7 +103,7 @@ float ObstacleDetectionModule::readInfrared(int pin) {
     return sensorValue;
 }
 
-float ObstacleDetectionModule::UltraSonicMetrics(int trigger, int echo) {
+float ObstacleDetectionModule::readUltrasonic(int trigger, int echo) {
     long duration = 0;
     float distance = 0.0f;
 
@@ -105,4 +119,11 @@ float ObstacleDetectionModule::UltraSonicMetrics(int trigger, int echo) {
     duration = pulseIn(echo, HIGH);
     distance = duration * 0.034 / 2;
     return distance;
+}
+
+bool ObstacleDetectionModule::readFloor(int pin) {
+    // true si no detecta suelo
+    bool measurament = digitalRead(pin);
+    // Lo invertimos
+    return !measurament;
 }

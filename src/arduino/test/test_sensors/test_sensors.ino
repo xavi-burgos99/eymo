@@ -2,30 +2,21 @@
 
 
 // the setup function runs once when you press reset or power the board
-ObstacleDetectionModule ODB(IREcho, US2Echo, US2Trig);
-int speed = 0;
-int direction = 0;
-int delay_time = 500;
-float ultrasonic_dist = 0.0;
-float infrarred_dist = 0.0;
+ObstacleDetectionModule ODB(IREcho, US2Echo, US2Trig, FLOOR);
+int delay_time = 2000;
+
 void setup() {
     Serial.begin(9600);
     Serial.println("Beginning setup...");
-    pinMode(LINE, INPUT);
     Serial.println("Setup done.\nBeginning loop...");
 }
 
 // the loop function runs over and over again forever
 void loop() {
     ODB.update();
-    Serial.print("Ultrasonic: ");
-    Serial.println(ODB.BackDistance);
-
-    Serial.print("infrarred: ");
-    Serial.println(ODB.IRDistance);
-
-    Serial.print("Line detector: ");
-    Serial.println(digitalRead(LINE));
-
+    printStatesAndDistances(ODB.IRState, ODB.IRDistance,
+                            ODB.BackState, ODB.BackDistance,
+                            ODB.FloorState, ODB.FloorDetected,
+                            ODB.WorstState);
     delay(delay_time);
 }

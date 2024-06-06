@@ -5,7 +5,7 @@
 
 // Modules
 MotorControlModule MCM(MotorM1, MotorM2, MotorE1, MotorE2);
-ObstacleDetectionModule ODB(IREcho, US2Echo, US2Trig);
+ObstacleDetectionModule ODB(IREcho, US2Echo, US2Trig, FLOOR);
 
 // Variables for this test
 int speed = 0;
