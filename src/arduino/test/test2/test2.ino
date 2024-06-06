@@ -10,7 +10,7 @@ ObstacleDetectionModule ODB(IREcho, US2Echo, US2Trig);
 // Variables for this test
 int speed = 0;
 int direction = 0;
-int time = 2000;
+int time = 10000;
 float sensorDist[2] = {15,15};
 SensorState ODB_state = Initiating;
 
@@ -21,29 +21,36 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-    // Serial.println("\n\n\nLoop...");
+    Serial.println("\n\n\nLoop...");
 
-    // Testing Dangerous
+    // FORWARD MOVE
+    Serial.print("Testing frontal forward move: ");
     speed = 255;
-    // Serial.print("Initial speed: ");
+    Serial.print("Initial speed: ");
     Serial.println(speed);
-    Serial.print("Worst state: ");
-    Serial.println(ODB.WorstState);
-    Serial.print("IR state: ");
-    Serial.println(ODB.IRState);
-    Serial.println(ODB.IRDistance);
-    Serial.print("Back state: ");
-    Serial.println(ODB.BackState);
-    Serial.println(ODB.BackDistance);
-
-
+    Serial.println("Reading Sensors...");
     ODB.update();
-    MCM.checkObstacles(speed, ODB.WorstState);
+    printStatesAndDistances(ODB.IRState, ODB.IRDistance, ODB.BackState, ODB.BackDistance, ODB.WorstState);
+    MCM.checkObstacles(speed, ODB.IRState, ODB.BackState, ODB.WorstState);
     MCM.move(speed, direction);
-    Serial.print("[Transformed] speed: ");
+    Serial.print("Resulting speed: ");
     Serial.println(speed);
     delay(time);
 
+
+    // BACKWARD MOVE
+    Serial.print("Testing frontal backward move: ");
+    speed = -255;
+    Serial.print("Initial speed: ");
+    Serial.println(speed);
+    Serial.println("Reading Sensors...");
+    ODB.update();
+    printStatesAndDistances(ODB.IRState, ODB.IRDistance, ODB.BackState, ODB.BackDistance, ODB.WorstState);
+    MCM.checkObstacles(speed, ODB.IRState, ODB.BackState, ODB.WorstState);
+    MCM.move(speed, direction);
+    Serial.print("Resulting speed: ");
+    Serial.println(speed);
+    delay(time);
 /*
     // Move straight backwards
     speed = -250;

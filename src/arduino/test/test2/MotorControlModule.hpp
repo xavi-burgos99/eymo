@@ -13,7 +13,7 @@ class MotorControlModule
 public:
     MotorControlModule(int motorM1, int motorM2, int motorE1, int motorE2);
     bool move(int speed, int direction);
-    bool checkObstacles(int &speed, SensorState ODM_state);
+    bool checkObstacles(int &speed, SensorState IRState, SensorState BackState, SensorState WorstState);
 
 private:
     bool _soft_speed_update(int speed, float alpha);
@@ -81,18 +81,25 @@ bool MotorControlModule::_compute_speed_and_direction(int speed, int direction,
     }
 }
 
-bool MotorControlModule::checkObstacles(int &speed, SensorState ODM_state)
+bool MotorControlModule::checkObstacles(int &speed, SensorState IRState, SensorState BackState, SensorState WorstState) 
 {
-    if (ODM_state == Dangerous)
+    // Si intenta avanzar y está en el borde parada de emergencia
+    if (IRState == Dangerous && speed > 0)
     {
         _stop();
         speed = 0;
     }
-    if (ODM_state == Warning)
+    // Si intenta retroceder y está cerca de un objeto parada de emergencia
+    if (BackState == Dangerous && speed < 0)
+    {
+        _stop();
+        speed = 0;
+    }
+    if (WorstState == Warning)
     {
         speed = (int) (0.25 * speed);
     }
-    if (ODM_state == Close)
+    if (WorstState == Close)
     {
         speed = (int) (0.75 * speed);
     }

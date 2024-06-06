@@ -13,5 +13,20 @@ enum SensorState {
     Dangerous = 4,
 };
 
+void printStatesAndDistances(SensorState IRState, float IRDistance, SensorState BackState, float BackDistance, SensorState WorstState) {
+    // IR
+    Serial.print("IR state: ");
+    Serial.print(IRState);
+    Serial.print(", IR distance: ");
+    Serial.println(IRDistance);
+    // US
+    Serial.print("US state: ");
+    Serial.print(BackState);
+    Serial.print(", US distance: ");
+    Serial.println(BackDistance);
+    // Worst state
+    Serial.print("Worst state: ");
+    Serial.println(WorstState);
+}
 
 #endif // UTILITIES_HPP
