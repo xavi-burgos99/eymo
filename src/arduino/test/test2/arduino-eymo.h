@@ -16,8 +16,10 @@
 #define MotorE2 11
 #define MotorM2 12
 
-// Obstacule Detection Module
-//#include "ObstacleDetectionModule/ObstacleDetectionModule.hpp"
+//#include "utilities.hpp"
+
+// Obstacle Detection Module
+#include "ObstacleDetectionModule.hpp"
 
 // Motor Control Module
 #include "MotorControlModule.hpp"

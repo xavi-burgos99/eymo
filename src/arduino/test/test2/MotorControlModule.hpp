@@ -8,131 +8,161 @@
  * strucr delante atras y parado, y uno distinto de derecha izquierda
  */
 
-class MotorControlModule {
+class MotorControlModule
+{
 public:
-  MotorControlModule(int motorM1, int motorM2, int motorE1, int motorE2);
-  bool move(int direction);
-  bool move(int speed, int direction, float *sensorDist);
+    MotorControlModule(int motorM1, int motorM2, int motorE1, int motorE2);
+    bool move(int speed, int direction);
+    bool checkObstacles(int &speed, SensorState ODM_state);
 
 private:
-  bool _soft_speed_update(int speed, float alpha);
-  bool _checkObstacles(float *sensorDist, int &speed);
-  bool _move_motor(int motorM, int motorE, int speed, int direction);  // direction: 0 = forward, 1 = backward
-  bool _coerce_speed_boundaries();
-  bool _stop();
-  bool _compute_speed_and_direction(int speed, int direction,
-                                    int &speed1, int &speed2,
-                                    int &motor_direction1, int &motor_direction2);
+    bool _soft_speed_update(int speed, float alpha);
+    bool _move_motor(int motorM, int motorE, int speed, int direction); // direction: 0 = forward, 1 = backward
+    bool _coerce_speed_boundaries();
+    bool _stop();
+    bool _compute_speed_and_direction(int speed, int direction,
+                                      int &speed1, int &speed2,
+                                      int &motor_direction1, int &motor_direction2);
 
-  int _motorM1;
-  int _motorM2;
-  int _motorE1;
-  int _motorE2;
+    int _motorM1;
+    int _motorM2;
+    int _motorE1;
+    int _motorE2;
 
-  int _speed;
-  float _epsilon;
+    int _speed;
+    float _epsilon;
 };
 
-MotorControlModule::MotorControlModule(int motorM1, int motorM2, int motorE1, int motorE2) {
-  _motorM1 = motorM1;
-  _motorM2 = motorM2;
+MotorControlModule::MotorControlModule(int motorM1, int motorM2, int motorE1, int motorE2)
+{
+    _motorM1 = motorM1;
+    _motorM2 = motorM2;
 
-  _motorE1 = motorE1;
-  _motorE2 = motorE2;
+    _motorE1 = motorE1;
+    _motorE2 = motorE2;
 
-  _speed = 0;
-  _epsilon = 3;
+    _speed = 0;
+    _epsilon = 3;
 
-  pinMode(_motorM1, OUTPUT);
-  pinMode(_motorM2, OUTPUT);
-  pinMode(_motorE1, OUTPUT);
-  pinMode(_motorE2, OUTPUT);
+    pinMode(_motorM1, OUTPUT);
+    pinMode(_motorM2, OUTPUT);
+    pinMode(_motorE1, OUTPUT);
+    pinMode(_motorE2, OUTPUT);
 }
 
 bool MotorControlModule::_compute_speed_and_direction(int speed, int direction,
                                                       int &speed1, int &speed2,
-                                                      int &motor_direction1, int &motor_direction2) {
-  speed1 = abs(speed);
-  speed2 = speed1;
-  switch (direction) {
-    case -1:  // turn left
-      speed1 = 0;
-      break;
-    case -2:  // rotate left
-      motor_direction1 = 1;
-      break;
-    case 1:  // turn right
-      speed2 = 0;
-      break;
-    case 2:  // rotate right
-      motor_direction2 = 1;
-      break;
+                                                      int &motor_direction1, int &motor_direction2)
+{
+    speed1 = abs(speed);
+    speed2 = speed1;
+    switch (direction)
+    {
+    case -1: // turn left
+        speed1 = 0;
+        break;
+    case -2: // rotate left
+        motor_direction1 = 1;
+        break;
+    case 1: // turn right
+        speed2 = 0;
+        break;
+    case 2: // rotate right
+        motor_direction2 = 1;
+        break;
     default:
-      break;
-  }
+        break;
+    }
 
-  if (speed < 0) {
-    motor_direction1 = 1;
-    motor_direction2 = 1;
-  }
+    if (speed < 0)
+    {
+        motor_direction1 = 1;
+        motor_direction2 = 1;
+    }
 }
 
-bool MotorControlModule::_checkObstacles(float *sensorDist, int &speed) {
-  if (sensorDist[0] < 5 or sensorDist[1] < 5) {
-    _stop();
-  }
-  if (sensorDist[0] < 10 or sensorDist[1] < 10) {
-    speed = (int)0.25 * speed;
-  }
-  if (sensorDist[0] < 15 or sensorDist[1] < 15) {
-    speed = (int)0.75 * speed;
-  }
+bool MotorControlModule::checkObstacles(int &speed, SensorState ODM_state)
+{
+    if (ODM_state == Dangerous)
+    {
+        _stop();
+        speed = 0;
+    }
+    if (ODM_state == Warning)
+    {
+        speed = (int) (0.25 * speed);
+    }
+    if (ODM_state == Close)
+    {
+        speed = (int) (0.75 * speed);
+    }
 }
 
-bool MotorControlModule::move(int speed, int direction, float *sensorDist) {
-  _checkObstacles(sensorDist, speed);
-  _soft_speed_update(-speed, 0.8);
+bool MotorControlModule::move(int speed, int direction)
+{
+    _soft_speed_update(-speed, 0.8);
 
-  int speed1 = 0;
-  int speed2 = 0;
-  int motor_direction1 = 0;
-  int motor_direction2 = 0;
+    // Inicializacion de velocidades y direcciones
+    int speed1 = 0;
+    int speed2 = 0;
+    int motor_direction1 = 0;
+    int motor_direction2 = 0;
 
-  _compute_speed_and_direction(_speed, direction, speed1, speed2, motor_direction1, motor_direction2);
+    // Cálculo de velocidades y direcciones
+    _compute_speed_and_direction(_speed, direction, speed1, speed2, motor_direction1, motor_direction2);
 
-  _move_motor(_motorM1, _motorE1, speed1, motor_direction1);
-  _move_motor(_motorM2, _motorE2, speed2, motor_direction2);
+    // Mover motores
+    _move_motor(_motorM1, _motorE1, speed1, motor_direction1);
+    _move_motor(_motorM2, _motorE2, speed2, motor_direction2);
 }
 
-bool MotorControlModule::_move_motor(int motorM, int motorE, int speed, int motor_direction) {
-  if (motor_direction == 0) {  // forward
-    digitalWrite(motorM, HIGH);
-  } else {  // backward
-    digitalWrite(motorM, LOW);
-  }
-  analogWrite(motorE, speed);
+bool MotorControlModule::_move_motor(int motorM, int motorE, int speed, int motor_direction)
+{
+    // Hacia delante
+    if (motor_direction == 0)
+    {
+        digitalWrite(motorM, HIGH);
+    }
+    // Hacia atrás
+    else
+    {
+        digitalWrite(motorM, LOW);
+    }
+    analogWrite(motorE, speed);
 }
 
-bool MotorControlModule::_stop() {
-  _speed = 0;
-  _move_motor(_motorM1, _motorE1, 0, 0);
-  _move_motor(_motorM2, _motorE2, 0, 0);
+bool MotorControlModule::_stop()
+{
+    // Parar bruscamente los motores
+    _speed = 0;
+    _move_motor(_motorM1, _motorE1, 0, 0);
+    _move_motor(_motorM2, _motorE2, 0, 0);
 }
 
-bool MotorControlModule::_coerce_speed_boundaries() {
-  if (_speed > 255) {
-    _speed = 255;
-  }
-  if (_speed < -255) {
-    _speed = -255;
-  }
+bool MotorControlModule::_coerce_speed_boundaries()
+{
+    // Controlar overflow de la velocidad
+    if (_speed > 255)
+    {
+        _speed = 255;
+    }
+    if (_speed < -255)
+    {
+        _speed = -255;
+    }
 }
 
-bool MotorControlModule::_soft_speed_update(int target_speed, float alpha) {
-  if (abs(_speed - target_speed) >= _epsilon) {
-    _speed = (int)_speed + (target_speed - _speed) * alpha;
-  } else {
-    _speed = target_speed;
-  }
-  _coerce_speed_boundaries();
+bool MotorControlModule::_soft_speed_update(int target_speed, float alpha)
+{
+    // Si la velocidad objetivo no se ha alcanzado se añade un porcentaje de la diferencia
+    if (abs(_speed - target_speed) >= _epsilon)
+    {
+        _speed = (int) _speed + (target_speed - _speed) * alpha;
+    }
+    else
+    {
+        _speed = target_speed;
+    }
+    // Controlar overflow
+    _coerce_speed_boundaries();
 }
