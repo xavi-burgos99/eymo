@@ -1,17 +1,10 @@
 #include <Arduino.h>
-
-enum SensorState {
-    Initiating = 0,
-    Safe = 1,
-    Close = 2,
-    Warning = 3,
-    Dangerous = 4,
-};
+#include "../utilities.hpp"
 
 class ObstacleDetectionModule{
     public:
         // States for each sensor
-        SensorState IRState, BackState;
+        SensorState IRState, BackState, WorstState;
         // Front sensor value
         float IRDistance;
         // Back sensor value
@@ -39,6 +32,7 @@ ObstacleDetectionModule::ObstacleDetectionModule(int pinIR, int BackEcho, int Ba
     BackDistance = 0.0f;
     IRState = Initiating;
     BackState = Initiating;
+    WorstState = Initiating;
 
     // Inicializa el pin Trigger como salida
     pinMode(BackTrig, OUTPUT);
@@ -76,6 +70,7 @@ void ObstacleDetectionModule::update() {
     else {
         BackState = Safe;
     }
+    WorstState = max(BackState, IRState);
 }
 
 float ObstacleDetectionModule::readInfrared(int pin) {

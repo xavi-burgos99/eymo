@@ -11,6 +11,7 @@ float infrarred_dist = 0.0;
 void setup() {
     Serial.begin(9600);
     Serial.println("Beginning setup...");
+    pinMode(LINE, INPUT);
     Serial.println("Setup done.\nBeginning loop...");
 }
 
@@ -22,6 +23,9 @@ void loop() {
 
     Serial.print("infrarred: ");
     Serial.println(ODB.IRDistance);
+
+    Serial.print("Line detector: ");
+    Serial.println(digitalRead(LINE));
 
     delay(delay_time);
 }
