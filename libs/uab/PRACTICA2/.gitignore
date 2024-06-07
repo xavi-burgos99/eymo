@@ -1,0 +1,11 @@
+# Git LFS required to push this videos and frames
+.videos_mpeg/
+.videos_y4m/
+*.png
+
+# Requires Git LFS
+*.mpeg 
+*.y4m
+
+# Executables for Windows
+*.exe
