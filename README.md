@@ -44,6 +44,15 @@ Eymo is a compact robotic companion blending machine learning and generative AI 
 
 ### Physic Robot
 
+1. Clone the repo, install the dependencies and run the main file:
+
+```bash
+pip install -r requirements.txt
+cd src/rpi
+python main.py
+```
+The main file will start the robot and the cloud connection. The robot will be able to receive commands from the cloud and execute them. The robot will also be able to send information to the cloud.
+
 ## What's included
 
 Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations. You'll see something like this:
@@ -80,7 +89,6 @@ src/
 LICENSE.md
 README.md
 ```
-## To Do
 
 ## Bugs and feature requests
 
