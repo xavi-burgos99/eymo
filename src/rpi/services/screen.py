@@ -249,7 +249,7 @@ class ScreenService(Service):
 
 	def __calc_animation_position(self):
 		"""Calculates the animation position."""
-		if self.__mode != ScreenMode.STANDBY or self._services['remote'].is_connected():
+		if self.__mode != ScreenMode.STANDBY:
 			self.__animation_x = (self.__width - self.ANIMATION_WIDTH) // 2
 			self.__animation_y = (self.__height - self.ANIMATION_HEIGHT) // 2
 			return
