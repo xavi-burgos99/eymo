@@ -60,24 +60,31 @@ Within the download you'll find the following directories and files, logically g
 ```text
 src/
 ├── rpi/
-│    ├── graphics/
-│    ├── mechanics/ 
+│    ├── configs/
+│    ├── services/ 
 │    ├── controllers/
-│    ├── ...
+│    ├── static/
+│    ├── utils/
 │    └── main.py     
 ├── arduino/
-│   ├── movements/
-│   ├── sensors/
-│   ├── ...
-│   └── main.ino
+│   ├── MotorControlModule/
+│   ├── ObstacleDetectionModule/
+│   ├── ServoMovementModule/
+│   ├── utilities.hpp
+│   ├── arduino-eymo.h
+│   └── arduino.ino
 └── cloud/
     ├── actions/
+    │   ├── gemini/
+    │   ├── test/
+    │   └── BaseAction.py
     ├── externals/
-    │   ├── class/
-    │   ├── functions/
+    │   ├── TextToSpeech.py
     │   └── ...
-    ├── resources/
-    ├── ...
+    ├── routers/
+    │   ├── model/
+    │   └── ActionRouter.py
+    ├── dependencies.py
     └── main.py 
 LICENSE.md
 README.md
