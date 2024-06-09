@@ -28,5 +28,38 @@
     "model_path": "static/tensorflow/vision.tflite",
     "threshold": 0.5,
     "fps": 2
+  },
+  "voice_assistant": {
+    "voice_id": {
+      "win": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Speech\\Voices\\Tokens\\TTS_MS_ES-ES_HELENA_11.0",
+      "mac": "com.apple.speech.synthesis.voice.jorge"
+    },
+    "rate": 150,
+    "pattern": "^(eymo|eimo|heimo|heymo|hemo|imo|inma|e inma|eima|eimos|oímos)\\b",
+    "threshold_duration": 0.4,
+    "activated_timeout": 30,
+    "queue_size": 2,
+    "queue_timeout": 10,
+    "pitch": 6,
+    "listen_timeout": 10,
+    "demo_mode": true,
+    "intents": {
+      "buenos días": "Buenas, ¿en qué puedo ayudarte?",
+      "qué tal": "Bien, esperando a que me preguntes algo para poderte ayudar.",
+      "texto": "Se entiende por texto una composición ordenada de signos inscritos en un sistema de escritura, cuya lectura permite recobrar un sentido específico referido por el emisor. La palabra texto proviene del latín textus, que significa tejido o entrelazado, de modo que en el origen mismo de la idea del texto se encuentra su capacidad para contener ideas en un hilo o una secuencia de caracteres.",
+      "puto": "Me cago en tu puta vida, cabron! No me insultes que te pego.",
+      "grupo": "Hola, gente de Chilling Tea \uD83E\uDDCB",
+      "ayuda": "get_help",
+      "modo trípode": "tripod_mode",
+      "recuerda": "set_reminder",
+      "reconoce esto": "get_image_details"
+    }
+  },
+  "cloud": {
+    "host": "https://eymo.dzin.es:7125",
+    "endpoint": "/action/perform",
+    "auth": {
+      "endpoint": "/authentication"
+    }
   }
 }

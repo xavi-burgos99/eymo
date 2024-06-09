@@ -2,8 +2,11 @@ import os
 import time
 import logging
 
-from models.setup import load_config, save_config, reset_config, init_logging
+from models.setup import load_config, init_logging
 from models.utils import is_rpi
+from rpi.services.cloud import CloudService
+from rpi.services.data_manager import DataManagerService
+from services.voice_assistant import VoiceAssistantService
 
 from services.arduino import ArduinoService
 from services.camera import CameraService
@@ -13,8 +16,7 @@ from services.stt import STTService
 from services.vision import VisionService
 from services.screen import ScreenService
 
-#os.chdir(os.path.dirname(os.path.abspath(__file__)))
-os.chdir("/Users/xavi/GitHub/eymo/src/rpi")
+os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
 def init_local_services(config: dict, services: dict):
@@ -32,6 +34,19 @@ def init_local_services(config: dict, services: dict):
 	STTService('stt', config, services)
 	VisionService('vision', config, services)
 	ScreenService('screen', config, services)
+	DataManagerService('data_manager', config, services)
+
+
+def init_cloud_services(config: dict, services: dict):
+	"""Initialize services that are going to run on the cloud.
+	Args:
+		config (dict): The system configuration
+		services (dict, optional): The services to initialize. Defaults to {}.
+	Returns:
+		dict: The initialized services
+	"""
+	CloudService('cloud', config, services)
+	VoiceAssistantService('voice_assistant', config, services)
 
 
 def main():
@@ -49,6 +64,10 @@ def main():
 	# Initialize local services
 	logging.info("Initializing local services...")
 	init_local_services(config, services)
+
+	# Initialize cloud services
+	logging.info("Initializing cloud services...")
+	init_cloud_services(config, services)
 
 	# Start the services
 	services['arduino'].start()

@@ -12,3 +12,7 @@ python-dotenv~=1.0.1
 pillow~=10.2.0
 pynput~=1.7.7
 python-vlc~=3.0.20123
+pyserial~=3.5
+scipy~=1.11.4
+matplotlib~=3.8.3
+pandas~=1.5.3

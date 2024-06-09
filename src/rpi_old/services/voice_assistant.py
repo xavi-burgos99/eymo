@@ -426,7 +426,7 @@ class VoiceAssistant:
 		audio_length = self.speaker.play(text)
 		time.sleep(audio_length + 1)
 
-		location_data = self.location.get_location()
+		location_data = get_location()
 		data = {
 			"option": "today",
 			"latitude": str(location_data.get("lat")),
