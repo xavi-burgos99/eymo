@@ -55,6 +55,7 @@ class VoiceAssistant:
             "set_reminder": self.set_reminder,
             "get_image_details": self.get_image_details,
             "tripod_mode": self.toggle_tripod_mode,
+            "turn_on_light": self.turn_on_light,
         }
 
         self.player = AudioPlayer()
@@ -68,6 +69,18 @@ class VoiceAssistant:
 
         reminder_thread = threading.Thread(target=self.check_reminders)
         reminder_thread.start()
+
+    def turn_on_light(self, args):
+        url = "http://192.168.50.205:8123/api/services/light/turn_on"
+        headers = {"Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiI1ODNkZGNmY2EzYTM0NDA5OTk1M2Y1ZWNkODRlODU3NCIsImlhdCI6MTcxNzMzMDY1NiwiZXhwIjoyMDMyNjkwNjU2fQ.gTyuKOqbN8XJ6CcVEDiMsZQwqVZZAqWw89iIiTQhw2E"}
+        data = {"entity_id": "light.smart_light_strip"}
+
+        response = post(url, headers=headers, json=data)
+        print(response.text)
+
+        return self.server_comm.call_server("speech", {
+            "text": "Vale"}).get(
+            "response").get("result")
 
     def speak(self, text, tts=False):
         logging.info(f"[SPEAKER] Speaking: {text}")

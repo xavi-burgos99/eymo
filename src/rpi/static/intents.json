@@ -9,6 +9,7 @@
         "ayuda": "get_help",
         "modo trípode": "tripod_mode",
         "recuerda": "set_reminder",
-        "reconoce esto": "get_image_details"
+        "reconoce esto": "get_image_details",
+        "enciende la luz": "turn_on_light"
     }
 }
