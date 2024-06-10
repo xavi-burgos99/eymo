@@ -147,15 +147,15 @@ class RemoteService(Service):
 							if frame is not None:
 								frame_base64 = base64.b64encode(frame).decode('utf-8')
 								data['image'] = frame_base64
-							else:
+							#else:
 								#logging.warning("Failed to get the camera frame.")
-								continue
+								#continue
 
 						# Send data
 						if True:
-							if len(data) == 0:
+							#if len(data) == 0:
 								#logging.warning('No data to send.')
-								continue
+								#continue
 							data_json = json.dumps(data)
 							data_bytes = data_json.encode('utf-8')
 
