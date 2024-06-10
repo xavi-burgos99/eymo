@@ -6,20 +6,20 @@
 #define PIN_TX 3  // Pin de transmisión de datos (conectado al pin RX de la Raspberry Pi)
 
 // UltraSonic Pins
-#define USEcho 4
-#define USTrig 5
+#define USEcho 8
+#define USTrig 9
 
 // Servos Pin
-#define ServoPin 6
+#define ServoPin 11
 
 // IR Pins
-#define IREcho A0
+#define IREcho A7
 
 // Motor pins
-#define MotorE1 9
-#define MotorM1 10
-#define MotorE2 11
-#define MotorM2 12
+#define MotorE1 3
+#define MotorM1 2
+#define MotorE2 5
+#define MotorM2 4
 
 // Obstacule Detection Module
 #include "ObstacleDetectionModule/ObstacleDetectionModule.hpp"
