@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import base64
 import socket
 import logging
 import platform
@@ -12,6 +13,7 @@ from services.service import Service
 
 from models.screen_mode import ScreenMode
 from models.frame_type import FrameType
+from models.control_mode import ControlMode
 
 
 class RemoteService(Service):
@@ -107,6 +109,7 @@ class RemoteService(Service):
 			self.__stream_connected = True
 			debug_interval = 1 / self._loop_delay
 			buffer = ""
+			self.__on_connect()
 			with conn:
 				conn.settimeout(self.__socket_timeout_delay)
 				while not self.__force_socket_close:
@@ -131,13 +134,29 @@ class RemoteService(Service):
 						except Exception as e:
 							pass
 
-						# Send camera frame
-						frame = self._services['camera'].get_frame(FrameType.BYTES)
-						if frame is None:
-							break
-						frame_size = len(frame)
-						conn.sendall(frame_size.to_bytes(4, byteorder='big'))
-						conn.sendall(frame)
+						# Prepare data to send
+						data = {}
+						if self.__send_data is not None:
+							data.update(self.__send_data)
+							self.__send_data = None
+
+						# Prepare image data
+						mode = self._services['arduino'].get_mode()
+						if mode == ControlMode.OFF or mode == ControlMode.MANUAL:
+							frame = self._services['camera'].get_frame(FrameType.BYTES)
+							if frame is not None:
+								frame_base64 = base64.b64encode(frame).decode('utf-8')
+								data['image'] = frame_base64
+
+						# Send data
+						if True:
+							data_json = json.dumps(data)
+							data_bytes = data_json.encode('utf-8')
+
+							frame_size = len(data_bytes)
+							conn.sendall(frame_size.to_bytes(4, byteorder='big'))
+							logging.info(f'Sending frame size: {data_bytes}')
+							conn.sendall(data_bytes)
 
 						if self._global_config.get('system', {}).get('debug', True):
 							if self.__stream_frame % debug_interval == 0:
@@ -147,12 +166,12 @@ class RemoteService(Service):
 									print(f'Camera Stream - FPS: {fps:.2f}')
 								self.__stream_frame_timestamp = now
 						self.__stream_frame += 1
-					except BrokenPipeError:
+					except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
 						break
 					except Exception as e:
-						logging.error(f"Exception in main loop: {e}")
 						continue
 					time.sleep(self._loop_delay)
+			self.__on_disconnect()
 			self.__stream_connected = False
 			logging.info('Stream disconnected.')
 			time.sleep(self.__disconnect_delay)
@@ -165,6 +184,7 @@ class RemoteService(Service):
 		self.__stream_frame = 0
 		self.__stream_frame_timestamp = None
 		self.__control_buffer = deque(maxlen=20)
+		self.__send_data = None
 		self.__host = self._config.get('host', self._config.get('host', '0.0.0.0'))
 		self.__port = self._config.get('port', self._config.get('port', 8000))
 		self.__sock = None
@@ -199,5 +219,35 @@ class RemoteService(Service):
 		Args:
 			data (dict): The control data
 		"""
-		if 'joystick' in data:
-			self._services['arduino'].send(data)
+		if 'joystick' in data or 'mode' in data:
+			data_ = {}
+			if 'mode' in data:
+				self._services['arduino'].mode(data['mode'])
+				data_['mode'] = data['mode']
+			if 'joystick' in data:
+				mode = self._services['arduino'].get_mode()
+				if mode == ControlMode.MANUAL:
+					x = (data['joystick']['x'] - 0.5) * 2
+					y = (data['joystick']['y'] - 0.5) * -2
+					x = round(x, 2)
+					y = round(y, 2)
+					data_['displacement'] = {'x': x, 'y': y}
+			if data_ != {}:
+				self._services['arduino'].send(data_)
+
+	def __on_connect(self):
+		"""On connect event."""
+		mode = self._services['arduino'].get_mode()
+		self.send({'mode': mode})
+
+	def __on_disconnect(self):
+		"""On disconnect event."""
+		pass
+
+	def send(self, data: dict):
+		"""Send data to the remote service."""
+		if not self.__stream_connected:
+			logging.warning('The stream is not connected.')
+			return
+		logging.info(f'Send data to the stream: {data}')
+		self.__send_data = data

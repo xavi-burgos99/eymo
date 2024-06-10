@@ -14,6 +14,7 @@ from services.vision import VisionService
 from services.screen import ScreenService
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
+#os.chdir("/Users/xavi/GitHub/eymo/src/rpi")
 
 
 def init_local_services(config: dict, services: dict):

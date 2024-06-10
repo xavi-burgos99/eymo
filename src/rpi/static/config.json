@@ -1,11 +1,12 @@
 {
   "camera": {
-    "fps": 30
+    "fps": 23,
+    "resolution": [512, 288]
   },
   "remote": {
     "host": "0.0.0.0",
     "port": 8000,
-    "loop": 0.01,
+    "loop": 0.025,
     "socket_timeout": 30,
     "disconnect_delay": 0,
     "port_release_timeout": 60
@@ -16,7 +17,7 @@
   "screen": {
     "width": 128,
     "height": 64,
-    "scale": 1,
+    "scale": 2,
     "fps": 23,
     "animation": {
       "padding_x": 0,
@@ -26,6 +27,6 @@
   "vision": {
     "model_path": "static/tensorflow/vision.tflite",
     "threshold": 0.5,
-    "fps": 5
+    "fps": 2
   }
 }
