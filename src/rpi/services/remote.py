@@ -155,6 +155,7 @@ class RemoteService(Service):
 
 							frame_size = len(data_bytes)
 							conn.sendall(frame_size.to_bytes(4, byteorder='big'))
+							logging.info(f'Sending frame size: {data_bytes}')
 							conn.sendall(data_bytes)
 
 						if self._global_config.get('system', {}).get('debug', True):
@@ -165,7 +166,7 @@ class RemoteService(Service):
 									print(f'Camera Stream - FPS: {fps:.2f}')
 								self.__stream_frame_timestamp = now
 						self.__stream_frame += 1
-					except BrokenPipeError:
+					except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
 						break
 					except Exception as e:
 						continue
