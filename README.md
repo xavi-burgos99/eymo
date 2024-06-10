@@ -70,6 +70,15 @@ To set up the cloud part of the project, follow these steps:
 
 ### Physic Robot
 
+1. Clone the repo, install the dependencies and run the main file:
+
+```bash
+pip install -r requirements.txt
+cd src/rpi
+python main.py
+```
+The main file will start the robot and the cloud connection. The robot will be able to receive commands from the cloud and execute them. The robot will also be able to send information to the cloud.
+
 ## What's included
 
 Within the download you'll find the following directories and files, logically grouping common assets and providing both compiled and minified variations. You'll see something like this:
@@ -77,29 +86,35 @@ Within the download you'll find the following directories and files, logically g
 ```text
 src/
 ├── rpi/
-│    ├── graphics/
-│    ├── mechanics/ 
+│    ├── configs/
+│    ├── services/ 
 │    ├── controllers/
-│    ├── ...
+│    ├── static/
+│    ├── utils/
 │    └── main.py     
 ├── arduino/
-│   ├── movements/
-│   ├── sensors/
-│   ├── ...
-│   └── main.ino
+│   ├── MotorControlModule/
+│   ├── ObstacleDetectionModule/
+│   ├── ServoMovementModule/
+│   ├── utilities.hpp
+│   ├── arduino-eymo.h
+│   └── arduino.ino
 └── cloud/
     ├── actions/
-    ├── external/
-    │   ├── class/
-    │   ├── functions/
+    │   ├── gemini/
+    │   ├── test/
+    │   └── BaseAction.py
+    ├── externals/
+    │   ├── TextToSpeech.py
     │   └── ...
-    ├── resources/
-    ├── ...
+    ├── routers/
+    │   ├── model/
+    │   └── ActionRouter.py
+    ├── dependencies.py
     └── main.py 
 LICENSE.md
 README.md
 ```
-## To Do
 
 ## Bugs and feature requests
 

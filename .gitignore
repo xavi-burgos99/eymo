@@ -187,3 +187,5 @@ fabric.properties
 .vscode
 **/**/.vscode
 .DS_Store
+src/rpi/static/tts/model_file.pth.tar
+src/rpi_old/static/tts/model_file.pth.tar
