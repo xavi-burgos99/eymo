@@ -183,6 +183,9 @@ fabric.properties
 
 # idea folder, uncomment if you don't need it
 .idea
+**/**/.idea
+.vscode
+**/**/.vscode
 .DS_Store
 src/rpi/static/tts/model_file.pth.tar
 src/rpi_old/static/tts/model_file.pth.tar

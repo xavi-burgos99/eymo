@@ -21,8 +21,9 @@
 - [Table of contents](#table-of-contents)
 - [Introduction](#introduction)
 - [Installation](#installation)
-   - [Cloud](#cloud)
-   - [Physic Robot](#physic-robot)
+  - [Prerequisites](#prerequisites)
+  - [Cloud](#cloud)
+  - [Physic Robot](#physic-robot)
 - [What's included](#whats-included)
 - [To Do](#to-do)
 - [Bugs and feature requests](#bugs-and-feature-requests)
@@ -40,7 +41,32 @@ Eymo is a compact robotic companion blending machine learning and generative AI 
 
 ## Installation
 
+This section will guide you through the installation process of the EYMO project. The project is divided into two main parts: the cloud and the physic robot. 
+
+The cloud part is responsible for the communication between the robot and the cloud, and the physic robot part is responsible for the robot's movements and sensors.
+
+### Prerequisites
+Before you begin, ensure you have the following installed on your system:
+- Python 3.12 or higher
+
 ### Cloud
+To set up the cloud part of the project, follow these steps:
+
+1. Clone the repository and install the required packages:
+   ```sh
+   git clone https://github.com/xavi-burgos99/eymo.git
+   cd eymo
+   pip install -r requirements.txt
+   ```
+2. Run the cloud server on port 7125:
+   ```sh
+   uvicorn src.cloud.main:app --reload --port 7125
+   ```
+   If you want to run it using HTTPS, use this command instead:
+    ```sh
+    uvicorn src.cloud.main:app --reload --port 7125 --ssl-keyfile ./src/cloud/static/key_tst.pem  --ssl-certfile ./src/cloud/static/cert_tst.pem
+    ```
+3. The cloud server will be running on [http://localhost:7125/](http://localhost:7125/) or your server IP address.
 
 ### Physic Robot
 

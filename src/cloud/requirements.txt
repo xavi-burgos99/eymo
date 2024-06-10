@@ -1,0 +1,14 @@
+uvicorn~=0.29.0
+vertexai~=1.48.0
+fastapi~=0.110.3
+pydantic~=2.7.1
+requests~=2.31.0
+google~=3.0.0
+google-cloud-storage~=2.16.0
+google-api-python-client~=2.131.0
+google-cloud-texttospeech~=2.16.3
+python-dotenv~=1.0.1
+python-jose~=3.3.0
+passlib==1.7.4
+python-multipart==0.0.9
+piped-api~=1.0.1b0
