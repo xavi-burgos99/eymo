@@ -17,9 +17,6 @@ class VoiceAssistantService(Service):
 
 	def init(self):
 		"""Initialize the service."""
-		# TODO: Refactorize dependencies
-		# self.tripod_mode = self.services['tripod_mode']
-
 		self.speaker = Speaker()
 		self.player = AudioPlayer()
 
@@ -37,13 +34,7 @@ class VoiceAssistantService(Service):
 			"get_image_details": self.__get_image_details__,
 			"tripod_mode": self.__toggle_tripod_mode__,
 		}
-
 		self.demo_mode = self._config.get("demo_mode", True)
-
-	# TODO: Refactorize reminders
-	# self.reminders = []
-	# reminder_thread = threading.Thread(target=self.__check_reminders__)
-	# reminder_thread.start()
 
 	def destroy(self):
 		"""Destroy the service."""
@@ -63,11 +54,14 @@ class VoiceAssistantService(Service):
 				self.__demo_mode__()
 			except Exception as e:
 				logging.error(f"Error in demo mode: {e}")
-		# TODO: Actualizar archivo de configuración para que no se ejecute en modo demo
+			# TODO: Actualizar archivo de configuración para que no se ejecute en modo demo
 
-		self.__speak__(self._services['cloud'].call_server("gemini", {
-			"prompt": "Eres un asistente de voz, llamado Eymo. Te debes presentar a tus usuarios de manera breve y siendo muy cordial."}).get(
-			"response").get("result"))
+		try:
+			self.__speak__(self._services['cloud'].call_server("gemini", {
+				"prompt": "Eres un asistente de voz, llamado Eymo. Te debes presentar a tus usuarios de manera breve y siendo muy cordial."}).get(
+				"response").get("result"))
+		except Exception as e:
+			logging.error(f"Error in voice assistant initialization: {e}")
 
 		with sr.Microphone(device_index=0) as mic:
 			while True:
@@ -87,8 +81,6 @@ class VoiceAssistantService(Service):
 
 	def loop(self):
 		"""Service loop."""
-		logging.info("Voice assistant is running...")
-		time.sleep(10)  # To simulate demo mode...
 		pass
 
 	def __speak__(self, text):
@@ -181,7 +173,7 @@ class VoiceAssistantService(Service):
 		audio_length = self.speaker.play(text)
 		time.sleep(audio_length + 1)
 
-		location_data = self._services['data_manager'].retrieve_data('robot_location')
+		location_data = self._services['data_manager'].subscribe('robot_location', lambda key, value: None)
 		data = {
 			"option": "today",
 			"latitude": str(location_data.get("lat")),
@@ -299,8 +291,15 @@ class VoiceAssistantService(Service):
 		}).get("response").get("result")
 
 	def __set_reminder__(self, params):
-		logging.warning("Reminders are not refactorized yet...")
-		pass
+		reminder = self._services['reminders'].set_reminder(params, self.__set_reminder_callback__)
+		return self._services['cloud'].call_server("gemini", {
+			"prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que le recuerdes al usuario que tiene que hacer {reminder}. Confirma que se lo vas a recordar cuando toque, aunque te de pereza.",
+			"reset": True}).get("response").get("result")
+
+	def __set_reminder_callback__(self, reminder_info):
+		self.__speak__(self._services['cloud'].call_server("speech", {
+			"text": f"Te recuerdo que {reminder_info}, mas te vale recordarlo.",
+		}).get("response").get("result"))
 
 	def __get_image_details__(self, prompt: str):
 		logging.info("Getting image details...")
@@ -310,6 +309,7 @@ class VoiceAssistantService(Service):
 			"reset": False}).get("response").get("result")
 
 	def __toggle_tripod_mode__(self, params):
+		# TODO: Toggle tripod mode from Voice Assistant.
 		logging.warning("Tripod mode is not refactorized yet...")
 		pass
 
@@ -408,7 +408,7 @@ class VoiceAssistantService(Service):
 	def __respond__(self, text):
 		# Step 1: Check for functional commands
 		logging.info("Handling playback...")
-		location_data = self._services['data_manager'].retrieve_data('robot_location')
+		location_data = self._services['data_manager'].subscribe('robot_location', lambda key, value: None)
 		response = self._services['cloud'].call_server("functional", {
 			"prompt": text + " | lat: " + str(location_data.get("lat")) + " lon: " + str(location_data.get("long"))})
 		logging.info(f"Playback response: {response}")

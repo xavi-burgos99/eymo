@@ -1,3 +1,6 @@
+import logging
+from typing import Any
+
 from rpi.models.location import get_ip, get_location
 from rpi.services.service import Service
 
@@ -7,59 +10,154 @@ class DataManagerService(Service):
 
 	def init(self):
 		"""Initialize the service."""
-		self.data = self._config.get("initial_data", {})
-		self.mobile_connected = False
+		self.data = self._global_config
+		self.subscribers = {}
+
+		if 'reminders' not in self.data:
+			self.data['reminders'] = []
 
 	def destroy(self):
 		"""Destroy the service."""
-		self.clear_data()
+		self.__clear_data__()
 
 	def before(self):
 		"""Before the loop. (Before the loop method is called, in the service thread)"""
-		self.data['robot_ip'] = get_ip()
+		self.data['ip_address'] = get_ip()
 
 	def loop(self):
 		"""Service loop."""
-		if not self.data.get('robot_ip'):
-			self.store_data('robot_ip', get_ip())
-		self.update_location()
+		if not self.data.get('ip_address'):
+			self.__store_data__('ip_address', get_ip())
+		self.__update_location__()
+		logging.info(f"Data in DataManager: {self.data}")
 
-	def store_data(self, key, value):
-		"""Almacena un valor asociado a una clave."""
-		self.data[key] = value
+	def subscribe(self, keys: list or str, on_change: callable) -> dict or any:
+		"""
+		Subscribe to data changes. If the key is already in the data, data is returned immediately.
+		Parameters
+		----------
+		keys: list | str
+		on_change: callable
 
-	def retrieve_data(self, key):
-		"""Recupera el valor asociado a una clave específica."""
-		return self.data.get(key)
+		Returns dict | any
+		-------
 
-	def retrieve_all_data(self):
-		"""Recupera todos los datos almacenados."""
-		return self.data
+		"""
+		if isinstance(keys, str):
+			keys = [keys]
 
-	def clear_data(self):
-		"""Limpia todos los datos almacenados."""
-		self.data.clear()
+		for key in keys:
+			if key not in self.subscribers:
+				self.subscribers[key] = []
+			self.subscribers[key].append(on_change)
 
-	def connect_mobile(self, mobile_info):
-		"""Registra un dispositivo móvil conectado."""
-		self.mobile_connected = True
-		self.store_data('mobile_info', mobile_info)
+		# Return the data for the requested keys
+		if len(keys) == 1:
+			return self.data.get(keys[0], None)
+		else:
+			return {key: self.data.get(key, None) for key in keys}
+
+	def connect_mobile(self, mobile_info: dict):
+		"""
+		Marks the mobile as connected and stores the mobile information.
+		Parameters
+		----------
+		mobile_info: dict
+
+		Returns None
+		-------
+
+		"""
+		logging.info(f"Mobile connected with data: {mobile_info}")
+		self.__store_data__('phone', mobile_info)
 
 	def disconnect_mobile(self):
-		"""Desconecta el dispositivo móvil."""
-		self.mobile_connected = False
-		self.store_data('mobile_info', None)
+		"""
+		Marks the mobile as disconnected.
+		Returns None
+		-------
 
-	def is_mobile_connected(self):
-		"""Verifica si hay un dispositivo móvil conectado."""
-		return self.mobile_connected
+		"""
+		logging.info("Mobile disconnected")
+		self.data.pop('phone', None)
 
-	def update_location(self) -> dict or None:
-		"""Actualiza la ubicación del robot. Prioriza movil."""
-		if self.mobile_connected and 'mobile_location' in self.data:
-			location = self.data['mobile_location']
+	def is_mobile_connected(self) -> bool:
+		"""
+		Check if the mobile is connected.
+		Returns bool
+		-------
+
+		"""
+		return 'phone' in self.data
+
+	def update_data(self, key: str, value: Any):
+		"""
+		Update a specific key in the data dictionary.
+
+		Parameters
+		----------
+		key : str
+			The key to update.
+		value : Any
+			The new value for the key.
+
+		Returns
+		-------
+		None
+		"""
+		self.__store_data__(key, value)
+
+	def remove_data(self, key: str):
+		"""
+		Remove a specific key from the data dictionary.
+
+		Parameters
+		----------
+		key : str
+			The key to remove.
+		"""
+		self.__remove_data__(key)
+
+	def __update_location__(self) -> dict or None:
+		"""Update the location."""
+		if self.is_mobile_connected() and 'location' in self.data['phone']:
+			location = self.data['phone']['location']
 		else:
-			location = get_location(self.data.get('robot_ip'))
-
-		self.store_data('robot_location', location)
+			location = get_location(self.data.get('ip_address'))
+		self.__store_data__('robot_location', location)
 		return location
+
+	def __clear_data__(self):
+		"""Clear all stored data."""
+		self.data.clear()
+		self.__notify_all_subscribers__(self.data)
+		self.subscribers.clear()
+
+	def __store_data__(self, key: str, value: Any):
+		"""Store data."""
+		if key is not None and value is not None:
+			self.data[key] = value
+			self.__notify_subscribers__(key, value)
+		else:
+			logging.warning(f"Invalid data to store: {key} - {value}")
+
+	def __remove_data__(self, key: str):
+		"""Remove data."""
+		if key in self.data:
+			self.data.pop(key)
+			self.__notify_subscribers__(key, None)
+		else:
+			logging.warning(f"Key not found: {key}")
+
+	def __notify_subscribers__(self, key: str, value: Any):
+		"""Notify subscribers about the data change."""
+		if key in self.subscribers:
+			for callback in self.subscribers[key]:
+				callback(key, value)
+
+	def __notify_all_subscribers__(self, data: dict):
+		"""Notify all subscribers about the data change."""
+		for key, subscribers in self.subscribers.items():
+			value = data.get(key, None)
+			for callback in subscribers:
+				callback(key, value)
