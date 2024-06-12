@@ -86,11 +86,10 @@ Within the download you'll find the following directories and files, logically g
 ```text
 src/
 ├── rpi/
-│    ├── configs/
-│    ├── services/ 
-│    ├── controllers/
+│    ├── logs/
+│    ├── models/ 
+│    ├── services/
 │    ├── static/
-│    ├── utils/
 │    └── main.py     
 ├── arduino/
 │   ├── MotorControlModule/
@@ -106,9 +105,12 @@ src/
     │   └── BaseAction.py
     ├── externals/
     │   ├── TextToSpeech.py
+    │   ├── BaseApi.py
     │   └── ...
     ├── routers/
     │   ├── model/
+    │   ├── .env.template
+    │   ├── Security.py
     │   └── ActionRouter.py
     ├── dependencies.py
     └── main.py 
@@ -150,11 +152,19 @@ Please read through our ~~[contributing guidelines](https://reponame/blob/master
 
 ## Acknowledgement
 
-This project has been made for the RLP (Robotics, Language and Planning) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our teacher [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
+This project has been made for the RLP (Robotics, Language and Planning) subject of the Computer Engineering degree at the [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We would like to thank our professor [Fernando Vilariño](https://linkedin.com/in/fernandovilarino) for his support and guidance throughout the project.
 
-The Cloud project was built for the MS (Multimedia Systems) subject in the Computer Engineering degree at [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We want to express our gratitude to our teacher [Jordi Serra](https://www.linkedin.com/in/jordiserraruiz/) for his assistance and support during this project in GCP (Google Cloud Platform).
+The Cloud project was built for the MS (Multimedia Systems) subject in the Computer Engineering degree at [UAB (Universitat Autònoma de Barcelona)](https://www.uab.cat/). We want to express our gratitude to our professor [Jordi Serra](https://www.linkedin.com/in/jordiserraruiz/) for his assistance and support during this project in GCP (Google Cloud Platform).
 
 ## References
+
+- [Vector Robot](https://ddlbots.com/products/vector-robot)
+- [Cozmo Robot](https://grupoadd.es/el-pequeno-cozmo)
+- [FastAPI](https://fastapi.tiangolo.com/)
+- [Arduino](https://www.arduino.cc/)
+- [Raspberry Pi](https://www.raspberrypi.org/)
+- [Google Cloud Platform](https://cloud.google.com/)
+- [TensorFlow Lite](https://www.tensorflow.org/lite)
 
 ## License
 
