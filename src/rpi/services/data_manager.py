@@ -10,7 +10,7 @@ class DataManagerService(Service):
 
 	def init(self):
 		"""Initialize the service."""
-		self.data = self._global_config
+		self.data = self._global_config.copy()
 		self.subscribers = {}
 
 		if 'reminders' not in self.data:
@@ -18,7 +18,7 @@ class DataManagerService(Service):
 
 	def destroy(self):
 		"""Destroy the service."""
-		self.__clear_data__()
+		self.__clear_data()
 
 	def before(self):
 		"""Before the loop. (Before the loop method is called, in the service thread)"""
@@ -27,9 +27,9 @@ class DataManagerService(Service):
 	def loop(self):
 		"""Service loop."""
 		if not self.data.get('ip_address'):
-			self.__store_data__('ip_address', get_ip())
-		self.__update_location__()
-		logging.info(f"Data in DataManager: {self.data}")
+			self.__store_data('ip_address', get_ip())
+		self.__update_location()
+		logging.debug(f"Data in DataManager: {self.data}")
 
 	def subscribe(self, keys: list or str, on_change: callable) -> dict or any:
 		"""
@@ -57,6 +57,38 @@ class DataManagerService(Service):
 		else:
 			return {key: self.data.get(key, None) for key in keys}
 
+	def unsubscribe(self):
+		"""
+		Unsubscribe from data changes.
+		Parameters
+		----------
+
+		Returns None
+		-------
+
+		"""
+		# TODO: Implement unsubscribe
+		logging.warning("Unsubscribe not implemented yet.")
+
+	def get_data(self, keys: list or str) -> Any:
+		"""
+		Get data by key.
+		Parameters
+		----------
+		keys: list | str
+
+		Returns Any
+		-------
+
+		"""
+		if isinstance(keys, str):
+			keys = [keys]
+
+		if len(keys) == 1:
+			return self.data.get(keys[0], None)
+		else:
+			return {key: self.data.get(key, None) for key in keys}
+
 	def connect_mobile(self, mobile_info: dict):
 		"""
 		Marks the mobile as connected and stores the mobile information.
@@ -69,7 +101,7 @@ class DataManagerService(Service):
 
 		"""
 		logging.info(f"Mobile connected with data: {mobile_info}")
-		self.__store_data__('phone', mobile_info)
+		self.__store_data('phone', mobile_info)
 
 	def disconnect_mobile(self):
 		"""
@@ -105,7 +137,7 @@ class DataManagerService(Service):
 		-------
 		None
 		"""
-		self.__store_data__(key, value)
+		self.__store_data(key, value)
 
 	def remove_data(self, key: str):
 		"""
@@ -116,46 +148,46 @@ class DataManagerService(Service):
 		key : str
 			The key to remove.
 		"""
-		self.__remove_data__(key)
+		self.__remove_data(key)
 
-	def __update_location__(self) -> dict or None:
+	def __update_location(self) -> dict or None:
 		"""Update the location."""
 		if self.is_mobile_connected() and 'location' in self.data['phone']:
 			location = self.data['phone']['location']
 		else:
 			location = get_location(self.data.get('ip_address'))
-		self.__store_data__('robot_location', location)
+		self.__store_data('robot_location', location)
 		return location
 
-	def __clear_data__(self):
+	def __clear_data(self):
 		"""Clear all stored data."""
 		self.data.clear()
-		self.__notify_all_subscribers__(self.data)
+		self.__notify_all_subscribers(self.data)
 		self.subscribers.clear()
 
-	def __store_data__(self, key: str, value: Any):
+	def __store_data(self, key: str, value: Any):
 		"""Store data."""
 		if key is not None and value is not None:
 			self.data[key] = value
-			self.__notify_subscribers__(key, value)
+			self.__notify_subscribers(key, value)
 		else:
 			logging.warning(f"Invalid data to store: {key} - {value}")
 
-	def __remove_data__(self, key: str):
+	def __remove_data(self, key: str):
 		"""Remove data."""
 		if key in self.data:
 			self.data.pop(key)
-			self.__notify_subscribers__(key, None)
+			self.__notify_subscribers(key, None)
 		else:
 			logging.warning(f"Key not found: {key}")
 
-	def __notify_subscribers__(self, key: str, value: Any):
+	def __notify_subscribers(self, key: str, value: Any):
 		"""Notify subscribers about the data change."""
 		if key in self.subscribers:
 			for callback in self.subscribers[key]:
 				callback(key, value)
 
-	def __notify_all_subscribers__(self, data: dict):
+	def __notify_all_subscribers(self, data: dict):
 		"""Notify all subscribers about the data change."""
 		for key, subscribers in self.subscribers.items():
 			value = data.get(key, None)
