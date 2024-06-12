@@ -55,11 +55,11 @@ def init_cloud_services(config: dict, services: dict):
 def main():
 	"""Main function to start the EYMO robot."""
 
-	# Initialize logging for debugging and system monitoring
-	init_logging()
-
 	logging.info("Loading system configurations...")
 	config = load_config()
+
+	# Initialize logging for debugging and system monitoring
+	init_logging(config.get('system', {}).get('debug', False))
 
 	# Initialize services
 	services = {}

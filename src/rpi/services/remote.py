@@ -218,6 +218,7 @@ class RemoteService(Service):
 		Args:
 			data (dict): The control data
 		"""
+		logging.debug(f'Data received from socket: {data}')
 		if 'joystick' in data or 'mode' in data:
 			data_ = {}
 			if 'mode' in data:
@@ -233,22 +234,22 @@ class RemoteService(Service):
 					data_['displacement'] = {'x': x, 'y': y}
 			if data_ != {}:
 				self._services['arduino'].send(data_)
-			if 'phone' in data:
-				self._services['data_manager'].connect_mobile(data['phone'])
-			if 'cloud' in data:
-				cloud_data = self._services['data_manager'].subscribe('cloud', lambda key, value: None)
-				if 'host' in data['cloud']:
-					cloud_data['host'] = data['cloud']['host']
-				if 'endpoint' in data['cloud']:
-					cloud_data['endpoint'] = data['cloud']['endpoint']
-				if 'auth' in data['cloud']:
-					if 'endpoint' in data['cloud']['auth']:
-						cloud_data['auth']['endpoint'] = data['cloud']['auth']['endpoint']
-					if 'user' in data['cloud']['auth']:
-						cloud_data['auth']['user'] = data['cloud']['auth']['user']
-					if 'password' in data['cloud']['auth']:
-						cloud_data['auth']['password'] = data['cloud']['auth']['password']
-				self._services['data_manager'].update_data('cloud', cloud_data)
+		if 'phone' in data:
+			self._services['data_manager'].connect_mobile(data['phone'])
+		if 'cloud' in data:
+			cloud_data = self._services['data_manager'].subscribe('cloud', lambda key, value: None)
+			if 'host' in data['cloud']:
+				cloud_data['host'] = data['cloud']['host']
+			if 'endpoint' in data['cloud']:
+				cloud_data['endpoint'] = data['cloud']['endpoint']
+			if 'auth' in data['cloud']:
+				if 'endpoint' in data['cloud']['auth']:
+					cloud_data['auth']['endpoint'] = data['cloud']['auth']['endpoint']
+				if 'user' in data['cloud']['auth']:
+					cloud_data['auth']['user'] = data['cloud']['auth']['user']
+				if 'password' in data['cloud']['auth']:
+					cloud_data['auth']['password'] = data['cloud']['auth']['password']
+			self._services['data_manager'].update_data('cloud', cloud_data)
 
 	def __on_connect(self):
 		"""On connect event."""

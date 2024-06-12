@@ -18,7 +18,7 @@ class RemindersService(Service):
 
 	def before(self):
 		"""Before the loop. (Before the loop method is called, in the service thread)"""
-		self.reminders = self._services['data_manager'].subscribe('reminders', self.__on_update_reminders__)
+		self.reminders = self._services['data_manager'].subscribe('reminders', self.__on_update_reminders)
 
 	def loop(self):
 		"""Service loop."""
@@ -63,6 +63,6 @@ class RemindersService(Service):
 
 		return reminder
 
-	def __on_update_reminders__(self, key, value):
+	def __on_update_reminders(self, key, value):
 		if key == "reminders":
 			self.reminders = value
