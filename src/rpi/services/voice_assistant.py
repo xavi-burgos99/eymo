@@ -16,6 +16,8 @@ import speech_recognition as sr
 class VoiceAssistantService(Service):
 	DEPENDENCIES = ['screen', 'camera', 'cloud', 'data_manager']
 	LOOP_DELAY = 0.01
+	MAX_ERRORS = -1
+	ERROR_INTERVAL = 60
 
 	def init(self):
 		"""Initialize the service."""
