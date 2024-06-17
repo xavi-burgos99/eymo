@@ -20,6 +20,9 @@ def is_rpi() -> bool:
 				if line.startswith('Hardware'):
 					UTILS_DATA['is_rpi'] = any([chip in line for chip in RPI_CHIPS])
 					return UTILS_DATA['is_rpi']
+				if line.startswith('Model'):
+					UTILS_DATA['is_rpi'] = 'Raspberry Pi' in line
+					return UTILS_DATA['is_rpi']
 	except Exception:
 		pass
 	UTILS_DATA['is_rpi'] = False

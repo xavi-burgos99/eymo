@@ -17,7 +17,7 @@ from models.control_mode import ControlMode
 
 
 class RemoteService(Service):
-	DEPENDENCIES = ['camera', 'screen']
+	DEPENDENCIES = ['network', 'camera', 'screen']
 	LOOP_DELAY = 0.01
 
 	def __force_close_port(self, port: int):
@@ -155,7 +155,6 @@ class RemoteService(Service):
 
 							frame_size = len(data_bytes)
 							conn.sendall(frame_size.to_bytes(4, byteorder='big'))
-							logging.info(f'Sending frame size: {data_bytes}')
 							conn.sendall(data_bytes)
 
 						if self._global_config.get('system', {}).get('debug', True):
