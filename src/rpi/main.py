@@ -10,6 +10,7 @@ from rpi.services.reminders import RemindersService
 from services.voice_assistant import VoiceAssistantService
 
 from services.arduino import ArduinoService
+from services.network import NetworkService
 from services.camera import CameraService
 from services.remote import RemoteService
 from services.tts import TTSService
@@ -18,8 +19,6 @@ from services.vision import VisionService
 from services.screen import ScreenService
 
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-#os.chdir("/Users/xavi/GitHub/eymo/src/rpi")
-
 
 def init_local_services(config: dict, services: dict):
 	"""Initialize services that are going to run locally on the robot.
@@ -30,6 +29,7 @@ def init_local_services(config: dict, services: dict):
 		dict: The initialized services
 	"""
 	ArduinoService('arduino', config, services)
+	NetworkService('network', config, services)
 	CameraService('camera', config, services)
 	RemoteService('remote', config, services)
 	TTSService('tts', config, services)

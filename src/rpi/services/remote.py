@@ -17,7 +17,7 @@ from models.control_mode import ControlMode
 
 
 class RemoteService(Service):
-	DEPENDENCIES = ['camera', 'screen']
+	DEPENDENCIES = ['network', 'camera', 'screen']
 	LOOP_DELAY = 0.01
 
 	def __force_close_port(self, port: int):
