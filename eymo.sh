@@ -39,6 +39,10 @@ install_eymo() {
 		sed -i "s/raspberrypi/$MDNS_HOSTNAME/" /etc/hosts
 	fi
 
+	# Set the jack output
+	raspi-config nonint do_audio 1
+	amixer set PCM 100%
+
   # Extract the zip file
   mkdir -p $APP_PATH
 	clear
@@ -94,12 +98,27 @@ install_eymo() {
   curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
 	mv bin/arduino-cli /usr/local/bin
 	rm -rf bin
-	sudo -u "$CURRENT_USER" arduino-cli core update-index
-	sudo -u "$CURRENT_USER" arduino-cli core install arduino:avr
-	sudo -u "$CURRENT_USER" arduino-cli lib update-index
-	sudo -u "$CURRENT_USER" arduino-cli lib install Servo
-	sudo -u "$CURRENT_USER" arduino-cli lib install Ultrasonic
-	sudo -u "$CURRENT_USER" arduino-cli lib install ArduinoJson
+
+	# Configure the Arduino-CLI
+	if [ ! -d "$APP_PATH/arduino/libraries" ]; then
+		mkdir -p "$APP_PATH/arduino/libraries"
+	fi
+	if [ ! -d /root/.arduino15 ]; then
+		mkdir /root/.arduino15
+	fi
+	echo -e "directories:\n\tuser: $APP_PATH/arduino/libraries" | tee /root/.arduino15/arduino-cli.yaml
+	chown -R "$CURRENT_USER":"$CURRENT_USER" "$APP_PATH/arduino/libraries"
+	chmod -R 755 "$APP_PATH/arduino/libraries"
+
+	# Install the Arduino-CLI libraries
+	arduino-cli core update-index
+	arduino-cli core install arduino:avr
+	arduino-cli lib update-index
+	arduino-cli lib install Servo
+	arduino-cli lib install Ultrasonic
+	arduino-cli lib install ArduinoJson
+
+
 
   # Finish the installation
 	read -p "EYMO has been installed successfully. Do you want to reboot now? [Y/n] " -n 1 -r
@@ -217,7 +236,7 @@ arduino_compile() {
 	fi
 
 	# Compile the Arduino code
-	sudo -u "$CURRENT_USER" arduino-cli compile --fqbn arduino:avr:nano $APP_PATH/arduino/arduino.ino
+	arduino-cli compile --libraries /opt/eymo/arduino/libraries --fqbn arduino:avr:nano $APP_PATH/arduino/arduino.ino
 }
 
 arduino_upload() {
@@ -239,10 +258,10 @@ arduino_upload() {
 	fi
 
 	# Compile the Arduino code
-	sudo -u "$CURRENT_USER" arduino-cli compile --fqbn arduino:avr:nano $APP_PATH/arduino/arduino.ino
+	arduino-cli compile --libraries /opt/eymo/arduino/libraries --fqbn arduino:avr:nano $APP_PATH/arduino/arduino.ino
 
 	# Upload the Arduino code
-	sudo -u "$CURRENT_USER" arduino-cli upload -p $USB_PORT --fqbn arduino:avr:nano $APP_PATH/arduino/arduino.ino
+	arduino-cli upload -p $USB_PORT --fqbn arduino:avr:nano $APP_PATH/arduino/arduino.ino
 }
 
 show_help() {

@@ -20,8 +20,8 @@
 #define SERVO_MAX_X 0.75
 
 #define REVERSE_DIRECTION 1
-#define MAX_SPEED 190
-#define FRONT_SPEED_MULTIPLIER 0.95
+#define MAX_SPEED 90
+#define FRONT_SPEED_MULTIPLIER 1
 
 #define MAX_BACK_DISTANCE 10
 #define MIN_BACK_DISTANCE 6
@@ -236,13 +236,13 @@ void printSerial() {
 
 void loop() {
   StaticJsonDocument<200> doc;
-  if (getSerial(doc)) {
+  if (getSerial(doc))
     processJson(doc);
   calcUsDistance();
   calcIrDistance();
   fixSpeed();
   //setMotorSpeed();
-  setServoAngle();
+  //setServoAngle();
   it++;
   delay(25);
 }
