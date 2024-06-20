@@ -7,8 +7,9 @@ import requests
 from pathlib import Path
 from dotenv import load_dotenv
 
-from rpi.models.server_input import ServerIn
-from rpi.services.service import Service
+from models.server_input import ServerIn
+from services.service import Service
+from models.utils import is_rpi
 
 
 class CloudService(Service):
@@ -39,6 +40,8 @@ class CloudService(Service):
 
 	def loop(self):
 		"""Service loop."""
+		if is_rpi() and not self._services['network'].is_connected():
+			return
 		self.__get_token__()
 
 	def call_server(self, action: str, params: dict) -> str | Any:
@@ -48,6 +51,10 @@ class CloudService(Service):
 		:param params: Parameters required for the action.
 		:return: Response from the server.
 		"""
+		if is_rpi() and not self._services['network'].is_connected():
+			logging.warning("No internet connection, skipping server call...")
+			return None
+
 		if not self.token:
 			self.__get_token__()
 

@@ -9,3 +9,9 @@ matplotlib~=3.8.3
 pandas~=1.5.3
 tflite-runtime~=2.14.0
 luma.oled~=3.13.0
+requests
+python-dotenv
+pygame
+SpeechRecognition
+mutagen
+pyaudio

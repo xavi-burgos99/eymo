@@ -4,9 +4,9 @@ import logging
 
 from models.setup import load_config, init_logging
 from models.utils import is_rpi
-from rpi.services.cloud import CloudService
-from rpi.services.data_manager import DataManagerService
-from rpi.services.reminders import RemindersService
+from services.cloud import CloudService
+from services.data_manager import DataManagerService
+from services.reminders import RemindersService
 from services.voice_assistant import VoiceAssistantService
 
 from services.arduino import ArduinoService
@@ -37,6 +37,7 @@ def init_local_services(config: dict, services: dict):
 	VisionService('vision', config, services)
 	ScreenService('screen', config, services)
 	DataManagerService('data_manager', config, services)
+	RemindersService('reminders', config, services)
 
 
 def init_cloud_services(config: dict, services: dict):
@@ -48,7 +49,6 @@ def init_cloud_services(config: dict, services: dict):
 		dict: The initialized services
 	"""
 	CloudService('cloud', config, services)
-	RemindersService('reminders', config, services)
 	VoiceAssistantService('voice_assistant', config, services)
 
 

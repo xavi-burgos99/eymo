@@ -4,12 +4,12 @@ import threading
 import time
 import re
 
-from rpi.models.audio_player import AudioPlayer
-from rpi.models.frame_type import FrameType
-from rpi.models.screen_mode import ScreenMode
-from rpi.models.setup import save_config
-from rpi.models.speaker import Speaker
-from rpi.services.service import Service
+from models.audio_player import AudioPlayer
+from models.frame_type import FrameType
+from models.screen_mode import ScreenMode
+from models.setup import save_config
+from models.speaker import Speaker
+from services.service import Service
 import speech_recognition as sr
 
 

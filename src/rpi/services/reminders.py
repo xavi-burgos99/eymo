@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from rpi.services.service import Service
+from services.service import Service
 
 
 class RemindersService(Service):

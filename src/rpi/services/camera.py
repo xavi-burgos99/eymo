@@ -1,5 +1,4 @@
 import base64
-import gc
 import cv2
 from PIL import Image
 
