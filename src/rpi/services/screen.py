@@ -1,7 +1,6 @@
 import logging
-import threading
 
-from PIL import Image, ImageDraw, ImageOps
+from PIL import Image, ImageDraw
 
 from services.service import Service
 

@@ -51,15 +51,15 @@ def main():
 			disconnected_time = 0
 			if check_access_point():
 				disable_access_point()
-				if not os.path.exists(NETWORK_FILE):
-					open(NETWORK_FILE, "w").close()
+			if not os.path.exists(NETWORK_FILE):
+				open(NETWORK_FILE, "w").close()
 		else:
 			disconnected_time += CHECK_INTERVAL
 			if disconnected_time >= DISCONNECTED_THRESHOLD:
 				if not check_access_point():
 					enable_access_point()
-					if os.path.exists(NETWORK_FILE):
-						os.remove(NETWORK_FILE)
+				if os.path.exists(NETWORK_FILE):
+					os.remove(NETWORK_FILE)
 		time.sleep(CHECK_INTERVAL)
 
 

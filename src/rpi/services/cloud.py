@@ -7,8 +7,8 @@ import requests
 from pathlib import Path
 from dotenv import load_dotenv
 
-from rpi.models.server_input import ServerIn
-from rpi.services.service import Service
+from models.server_input import ServerIn
+from services.service import Service
 
 
 class CloudService(Service):

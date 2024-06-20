@@ -1,8 +1,8 @@
 import logging
 from typing import Any
 
-from rpi.models.location import get_ip, get_location
-from rpi.services.service import Service
+from models.location import get_ip, get_location
+from services.service import Service
 
 
 class DataManagerService(Service):

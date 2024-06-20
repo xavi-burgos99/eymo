@@ -36,7 +36,13 @@ install_eymo() {
 	# Set the mDNS hostname
 	if [ -f /etc/hostname ]; then
 		hostnamectl set-hostname "$MDNS_HOSTNAME"
-		sed -i "s/raspberrypi/$MDNS_HOSTNAME/" /etc/hosts
+
+		# Update /etc/hosts with the new hostname
+    if grep -q "127.0.1.1" /etc/hosts; then
+        sudo sed -i "s/127.0.1.1.*/127.0.1.1\t$MDNS_HOSTNAME/" /etc/hosts
+    else
+        echo "127.0.1.1\t$MDNS_HOSTNAME" | sudo tee -a /etc/hosts
+    fi
 	fi
 
   # Extract the zip file
@@ -52,21 +58,21 @@ install_eymo() {
   systemctl stop hostapd
   systemctl stop dnsmasq
   systemctl stop dhcpcd
-  echo -e "interface=wlan0\nssid=EYMO\nhw_mode=g\nchannel=7\ndriver=nl80211\nignore_broadcast_ssid=0\n" | tee /etc/hostapd/hostapd.conf
+  echo -e "interface=wlan0\nssid=EYMO\nchannel=7\nignore_broadcast_ssid=0\n" | tee /etc/hostapd/hostapd.conf
   sed -i '/DAEMON_CONF=/d' /etc/default/hostapd
   echo 'DAEMON_CONF="/etc/hostapd/hostapd.conf"' | tee -a /etc/default/hostapd
   mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
   echo -e "interface=wlan0\ndhcp-range=192.168.44.2,192.168.44.20,255.255.255.0,24h" | tee /etc/dnsmasq.conf
-  echo -e "\ninterface wlan0\nstatic ip_address=192.168.44.1/24\nnohook wpa_supplicant" | tee -a /etc/dhcpcd.conf
+  echo -e "\ninterface wlan0\n    static ip_address=192.168.44.1/24\n    nohook wpa_supplicant" | tee -a /etc/dhcpcd.conf
   systemctl start hostapd
   systemctl start dnsmasq
   systemctl start dhcpcd
 
 	# Install Python3 and the required packages
-  apt-get install python3 python3-pip python3-rpi.gpio python3-opencv python3-virtualenv -y
+  apt-get install python3 python3-pip python3-rpi.gpio python3-opencv python3-virtualenv vlc portaudio19-dev flac -y
 
 	# Create a virtual environment and install the required packages
-  sudo -u eymo virtualenv -p python3 $APP_PATH/venv
+  sudo -u $CURRENT_USER virtualenv -p python3 $APP_PATH/venv
   source $APP_PATH/venv/bin/activate
   pip3 install -r $APP_PATH/requirements.txt
   pip3 install luma.oled
@@ -128,7 +134,7 @@ uninstall_eymo() {
   # Remove the services
   rm /etc/systemd/system/eymo.service
   rm /etc/systemd/system/eymo_network.service
-  apt-get remove python3 python3-pip python3-rpi.gpio python3-opencv python3-virtualenv -y
+  apt-get remove python3 python3-pip python3-rpi.gpio python3-opencv python3-virtualenv vlc portaudio19-dev flac -y
 
   # Remove the access point
   systemctl stop hostapd
