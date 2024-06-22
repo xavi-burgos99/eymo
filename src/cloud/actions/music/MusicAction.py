@@ -3,10 +3,6 @@ from abc import ABC
 from src.cloud.actions.BaseAction import BaseAction
 from src.cloud.external.MusicPlayer import get_song_audio_url
 
-import re
-import vertexai
-
-from vertexai.generative_models import GenerativeModel, ChatSession
 from piped_api import PipedClient
 
 

@@ -1,5 +1,5 @@
 import vertexai
-from datetime import date
+from datetime import date, datetime
 from vertexai.generative_models import (
     Content,
     FunctionDeclaration,
@@ -7,6 +7,8 @@ from vertexai.generative_models import (
     GenerativeModel,
     Part,
     Tool,
+    HarmCategory,
+    HarmBlockThreshold
 )
 
 from abc import ABC
@@ -63,10 +65,14 @@ class FunctionalAction(BaseAction, ABC):
         return control_music_func
 
     def _get_reminder_tool(self) -> FunctionDeclaration:
+        # Ensure the current date and time are in the correct European format
+        current_date = date.today().strftime('%Y-%m-%d')
+        current_time = datetime.now().strftime('%H:%M:%S')
+
         function_name = "set_reminder"
         set_reminder_func = FunctionDeclaration(
             name=function_name,
-            description="Set a reminder",
+            description=f"Set a reminder. This function can handle specific times and relative times. Examples of requests include 'recuérdame que tengo que levantarme en 5 minutos', 'recuérdame que me tengo que tomar la pastilla en 20 minutos'. Today is {current_date}. The current time is {current_time} (European 24-hour format).",
             parameters={
                 "type": "object",
                 "properties": {
@@ -77,16 +83,16 @@ class FunctionalAction(BaseAction, ABC):
                     "time": {
                         "type": "string",
                         "format": "time",
-                        "description": "Time for the reminder in the format 'HH:MM' or 'HH:MM:SS'"
+                        "description": "Time for the reminder in the format 'HH:MM' or 'HH:MM:SS' (European 24-hour format)"
                     },
                     "date": {
                         "type": "string",
                         "format": "date",
-                        "description": "Date for the reminder in the format 'YYYY-MM-DD'. Default is today." + f". Today is {date.today().strftime('%Y-%m-%d')}"
+                        "description": f"Date for the reminder in the format 'YYYY-MM-DD'. Default is today. Today is {current_date}."
                     }
                 },
                 "required": ["reminder", "time"]
-            },
+            }
         )
 
         return set_reminder_func
@@ -94,7 +100,7 @@ class FunctionalAction(BaseAction, ABC):
     def _get_image_details(self) -> FunctionDeclaration:
         get_image_details_func = FunctionDeclaration(
             name="get_image_details",
-            description="Captura y analiza una imagen para identificar y describir cualquier objeto, planta, animal, persona u otra cosa que se esté mostrando. Esta función es activada por prompts que soliciten reconocimiento visual, tales como 'reconoce esto', 'qué es esto', 'qué tengo aquí', 'qué planta es esta', 'qué animal es este', 'quién es esta persona', 'qué ves aquí', 'qué hay en la imagen', 'puedes identificar esto', 'qué es lo que tengo en las manos', 'qué aparece aquí', etc. Cualquier otra pregunta que tenga que ver con algo visual, o que pueda estar a la vista de una camara o foco, tambien debera ir a esta pregunta.",
+            description="Captura y analiza una imagen para identificar y describir cualquier objeto, planta, animal, persona u otra cosa que se esté mostrando. Esta función es activada por prompts que soliciten reconocimiento visual, tales como 'reconoce esto', 'qué es esto', 'qué tengo aquí', 'qué planta es esta', 'qué animal es este', 'quién es esta persona', 'qué ves aquí', 'qué hay en la imagen', 'puedes identificar esto', 'qué es lo que tengo en las manos', 'qué aparece aquí', etc. Cualquier otra pregunta que tenga que ver con algo visual, o que pueda estar a la vista de una camara o foco, tambien debera ir a esta pregunta. Pregunta sobre colores, formas o descripciones de objetos que se puedan ver gracias a una imagen tambien deberian redirigirse a esta funcion, puesto que hara la llamada a Gemini Vision para entenderla.",
             parameters={
                 "type": "object",
                 "properties": {},
@@ -123,6 +129,13 @@ class FunctionalAction(BaseAction, ABC):
 
         response = self.model.generate_content(
             user_prompt_content,
+            safety_settings={
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH
+            },
             generation_config=GenerationConfig(temperature=0),
             tools=[tool],
         )

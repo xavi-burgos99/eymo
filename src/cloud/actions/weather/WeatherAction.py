@@ -1,11 +1,6 @@
-import vertexai
 import re
 from vertexai.generative_models import (
-    Content,
-    GenerationConfig,
     GenerativeModel,
-    Part,
-    Tool,
 )
 
 from src.cloud.actions.BaseAction import BaseAction
@@ -20,9 +15,8 @@ class WeatherAction(BaseAction, ABC):
     LON_PARAM_NAME = "longitude"
 
     BASE_URL = "http://dataservice.accuweather.com"
-    #API_KEY = "cveAxjGo1fpAYcd64xglPwlCqhCgqkjo" Samya
-    API_KEY = "FaZJ0i1v5wePcQP37bGk9SxkA8eSIyKM"
-    LOCATION_KEY = '304465'
+    API_KEY = "cveAxjGo1fpAYcd64xglPwlCqhCgqkjo"
+    # API_KEY = "FaZJ0i1v5wePcQP37bGk9SxkA8eSIyKM" Yeray
     
     def __init__(self):
         super().__init__()
@@ -37,14 +31,22 @@ class WeatherAction(BaseAction, ABC):
         min = farenheit_to_celsius(float(response.get("Temperature").get("Minimum").get("Value")))
         max = farenheit_to_celsius(float(response.get("Temperature").get("Maximum").get("Value")))
         print(str(parameters[self.OPTION_PARAM_NAME]))
-        prompt = "Breve y en español:" + str(parameters[self.OPTION_PARAM_NAME]) + str(response.get("Day").get("IconPhrase"))+ \
-            "The temperature will be bettween " + min + max + " degrees celsius."
+        prompt = "Datos del tiempo:" + str(parameters[self.OPTION_PARAM_NAME]) + str(response.get("Day").get("IconPhrase")) + \
+            "Temperatura minima: " + min + ", temperatura maxima: " +max + " grados Celsius."
 
-        model = GenerativeModel("gemini-pro")
+        model = GenerativeModel(
+            "gemini-pro",
+            system_instruction=[
+                "Eres un asistente de voz llamado EYMO, diseñado para ayudar.",
+                "Siempre debes responder en Español y sin usar onomatopeyas como Ugh, Uff, ni nada similar.",
+                "Al darte informacion sobre el clima/tiempo, debes dar una respuesta breve sobre la informacion proporcionada.",
+                "Debes resonder de manera graciosa pero siendo preciso, sin mentir."
+            ],
+        )
         result = model.generate_content(prompt)
 
         clean_text = result.text.replace('\n', '')
-        clean_text = re.sub(r'[^a-zA-Z0-9,.:;-_~=¿?¡!áéíóúÁÉÍÓÚüÜÑñ\s]', ' ', clean_text)
+        clean_text = re.sub(r'[^a-zA-Z0-9,.:;-_~=¿?¡!áéíóúÁÉÍÓÚüÜÑñ\s]', '', clean_text)
         text_response = clean_text.strip()
         print(text_response)
         result_base64 = text_to_speech(text_response)
