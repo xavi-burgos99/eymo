@@ -37,6 +37,7 @@ def init_local_services(config: dict, services: dict):
 	VisionService('vision', config, services)
 	ScreenService('screen', config, services)
 	DataManagerService('data_manager', config, services)
+	RemindersService('reminders', config, services)
 
 
 def init_cloud_services(config: dict, services: dict):
@@ -48,7 +49,6 @@ def init_cloud_services(config: dict, services: dict):
 		dict: The initialized services
 	"""
 	CloudService('cloud', config, services)
-	RemindersService('reminders', config, services)
 	VoiceAssistantService('voice_assistant', config, services)
 
 
