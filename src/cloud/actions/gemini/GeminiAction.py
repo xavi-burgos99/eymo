@@ -6,7 +6,7 @@ from src.cloud.external.ImageTmpToGC import upload_base64_image_to_gcs, delete_b
 
 import re
 import vertexai
-from vertexai.generative_models import GenerativeModel, ChatSession, Part
+from vertexai.generative_models import GenerativeModel, ChatSession, Part, HarmCategory, HarmBlockThreshold
 
 
 class GeminiAction(BaseAction, ABC):
@@ -26,20 +26,36 @@ class GeminiAction(BaseAction, ABC):
         }
 
         vertexai.init(project=self.settings['project_id'], location=self.settings['location'])
-        self.model = GenerativeModel(self.settings['model'])
+        self.model = GenerativeModel(
+            self.settings['model'],
+            system_instruction=[
+                "Eres un asistente de voz llamado EYMO, diseñado para ayudar con sarcasmo y comentarios bordes.",
+                "Siempre debes responder en Español y sin usar onomatopeyas como Ugh, Uff, ni nada similar.",
+            ],
+        )
         self.chat = None
 
     def get_chat_response(self, chat: ChatSession, prompt: str, image: str) -> str:
         text_response = ""
         if image is not None:
-            responses = self.model.generate_content([image, prompt])
+            responses = self.model.generate_content(
+                [image, prompt],
+                safety_settings = {
+                    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                    HarmCategory.HARM_CATEGORY_UNSPECIFIED: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+                    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_ONLY_HIGH
+                },
+            )
             delete_blob(self.settings['bucket_name'], self.settings['blob_name'])
             return responses.text
         else:
             responses = chat.send_message(f"Brevemente y en español: {prompt}", stream=True)
             for chunk in responses:
                 clean_text = chunk.text.replace('\n', '')
-                clean_text = re.sub(r'[^a-zA-Z0-9,.:;¿?¡!áéíóúÁÉÍÓÚüÜ\s]', ' ', clean_text)
+                print(f"Text without cleaning: {clean_text}")
+                clean_text = re.sub(r'[^a-zA-Z0-9,.:;¿?¡!áéíóúÁÉÍÓÚüÜñÑ\s]', '', clean_text)
                 text_response += (str(" ") + clean_text.strip())
             return text_response
     
@@ -54,7 +70,7 @@ class GeminiAction(BaseAction, ABC):
             image = Part.from_uri(image_file_uri, mime_type="image/png")
 
         if self.chat is None or parameters.get('reset'):
-            self.chat = self.model.start_chat(response_validation=False)  
+            self.chat = self.model.start_chat()
 
         result = self.get_chat_response(self.chat, parameters[self.PROMPT_PARAM_NAME], image)
         print(result)
