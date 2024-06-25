@@ -1,4 +1,4 @@
-import gc
+import base64
 import cv2
 from PIL import Image
 
@@ -16,6 +16,7 @@ class CameraService(Service):
 		self.__last_frame_list = None
 		self.__last_frame_bytes = None
 		self.__last_frame_image = None
+		self.__last_frame_base64 = None
 		self.__fps = self._config.get('fps', 23)
 		self._loop_delay = 1 / self.__fps
 
@@ -37,6 +38,7 @@ class CameraService(Service):
 		self.__last_frame_list = None
 		self.__last_frame_bytes = None
 		self.__last_frame_image = None
+		self.__last_frame_base64 = None
 
 	def __convert_frame(self, type: int):
 		"""Convert the camera frame."""
@@ -57,6 +59,11 @@ class CameraService(Service):
 			if self.__last_frame_image is None:
 				self.__last_frame_image = Image.fromarray(frame)
 			return self.__last_frame_image
+		if type == FrameType.BASE64:
+			if self.__last_frame_base64 is None:
+				retval, buffer = cv2.imencode('.png', frame)
+				self.__last_frame_base64 = base64.b64encode(buffer).decode('utf-8')
+			return self.__last_frame_base64
 		return None
 
 	def get_frame(self, type: int = FrameType.NUMPY):
@@ -70,5 +77,6 @@ class CameraService(Service):
 		if not ret:
 			return None
 		frame = cv2.resize(frame, tuple(self.__resolution))
+		frame = cv2.rotate(frame, cv2.ROTATE_180)
 		self.__last_frame = frame
 		return self.__convert_frame(type)

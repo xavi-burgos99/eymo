@@ -1,18 +1,18 @@
 {
   "camera": {
     "fps": 23,
-    "resolution": [512, 288]
+    "resolution": [320, 180]
   },
   "remote": {
     "host": "0.0.0.0",
-    "port": 8000,
-    "loop": 0.025,
+    "port": 8989,
+    "loop": 0.05,
     "socket_timeout": 30,
     "disconnect_delay": 0,
     "port_release_timeout": 60
   },
   "system": {
-    "debug": true
+      "debug": false
   },
   "screen": {
     "width": 128,
@@ -28,5 +28,36 @@
     "model_path": "static/tensorflow/vision.tflite",
     "threshold": 0.5,
     "fps": 2
+  },
+  "voice_assistant": {
+    "voice_id": {
+      "win": "HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Speech\\Voices\\Tokens\\TTS_MS_ES-ES_HELENA_11.0",
+      "mac": "com.apple.speech.synthesis.voice.jorge"
+    },
+    "rate": 150,
+    "pattern": "\\b(eymo|eimo|heimo|heymo|hemo|imo|inma|e inma|eima|eimos|oímos)\\b",
+    "threshold_duration": 0.4,
+    "activated_timeout": 30,
+    "queue_size": 2,
+    "queue_timeout": 10,
+    "pitch": 6,
+    "listen_timeout": 10,
+    "demo_mode": true,
+    "intents": {
+      "buenos días": "Buenas, ¿en qué puedo ayudarte?",
+      "qué tal": "Bien, esperando a que me preguntes algo para poderte ayudar.",
+      "texto": "Se entiende por texto una composición ordenada de signos inscritos en un sistema de escritura, cuya lectura permite recobrar un sentido específico referido por el emisor. La palabra texto proviene del latín textus, que significa tejido o entrelazado, de modo que en el origen mismo de la idea del texto se encuentra su capacidad para contener ideas en un hilo o una secuencia de caracteres.",
+      "ayuda": "get_help",
+      "modo trípode": "tripod_mode",
+      "recuerda": "set_reminder",
+      "reconoce esto": "get_image_details"
+    }
+  },
+  "cloud": {
+    "host": "https://eymo.dzin.es:7125",
+    "endpoint": "/action/perform",
+    "auth": {
+      "endpoint": "/authentication"
+    }
   }
 }

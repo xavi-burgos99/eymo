@@ -1,25 +1,29 @@
 import logging
-import threading
 
-from PIL import Image, ImageDraw, ImageOps, ImageTk
+from PIL import Image, ImageDraw
 
 from services.service import Service
 
 from models.utils import is_rpi
 from models.screen_animation import ScreenAnimation
 from models.screen_mode import ScreenMode
+from models.oled_display import OledDisplay
+
+if not is_rpi():
+	import tkinter as tk
+	from tkinter import Canvas
+	from PIL import ImageTk
 
 
 class ScreenService(Service):
 	DEPENDENCIES = ['arduino', 'camera', 'vision']
+	MAX_ERRORS = -1
 
 	ANIMATION_WIDTH = 64
 	ANIMATION_HEIGHT = 64
 
 	def __tk_init(self):
 		"""Initializes tkinter for PCs to emulate the screen."""
-		import tkinter as tk
-		from tkinter import Canvas
 		geometry = f'{self.__tk_width}x{self.__tk_height}'
 		root = tk.Tk()
 		root.title('EYMO - Emulator')
@@ -137,7 +141,9 @@ class ScreenService(Service):
 		self.__animation_y_diff = self.__animation_y_max - self.__animation_y_min
 		self.__animation_y_mid = self.__animation_y_diff // 2
 
-		if not is_rpi():
+		if is_rpi():
+			self.__display = OledDisplay()
+		else:
 			self.__scale = self._config.get('scale', 2)
 			self.__tk_root = None
 			self.__tk_canvas = None
@@ -147,6 +153,9 @@ class ScreenService(Service):
 			self.__tk_mainloop_enabled = False
 			logging.info('Initializing tkinter...')
 			self.__tk_init()
+
+	def get_mode(self):
+		return self.__mode
 
 	def destroy(self):
 		"""Destroys the screen service."""
@@ -200,10 +209,7 @@ class ScreenService(Service):
 				self.__animation_frame = 0
 			return
 		self.__animation = name
-		if is_rpi():
-			self.__animation_frames = ScreenAnimation.get(name)
-		else:
-			self.__animation_frames = ScreenAnimation.get_image(name)
+		self.__animation_frames = ScreenAnimation.get_image(name)
 		self.__animation_frame = 0
 		self.__animation_frames_len = len(self.__animation_frames)
 
@@ -217,6 +223,20 @@ class ScreenService(Service):
 			raise ValueError('Invalid screen mode')
 		self.__mode = mode
 
+	def __calc_animation_position(self):
+		"""Calculates the animation position."""
+		if self.__mode != ScreenMode.STANDBY:
+			self.__animation_x = (self.__width - self.ANIMATION_WIDTH) // 2
+			self.__animation_y = (self.__height - self.ANIMATION_HEIGHT) // 2
+			return
+		position = self._services['vision'].get_position()
+		x = position['x']
+		y = position['y']
+		x *= self.__animation_x_diff
+		y *= self.__animation_y_diff
+		self.__animation_x = int(x + self.__animation_x_min)
+		self.__animation_y = int(y + self.__animation_y_min)
+
 	def loop(self):
 		"""Main loop of the screen service."""
 		self.__select_animation()
@@ -225,9 +245,6 @@ class ScreenService(Service):
 		else:
 			self.__loop_pc()
 		self.__frame += 1
-
-	def __loop_rpi(self):
-		pass
 
 	def __loop_pc(self):
 		if not self.__tk_mainloop_enabled:
@@ -247,16 +264,14 @@ class ScreenService(Service):
 			canvas.pack()
 		self.__tk_root.update()
 
-	def __calc_animation_position(self):
-		"""Calculates the animation position."""
-		if self.__mode != ScreenMode.STANDBY:
-			self.__animation_x = (self.__width - self.ANIMATION_WIDTH) // 2
-			self.__animation_y = (self.__height - self.ANIMATION_HEIGHT) // 2
-			return
-		position = self._services['vision'].get_position()
-		x = position['x']
-		y = position['y']
-		x *= self.__animation_x_diff
-		y *= self.__animation_y_diff
-		self.__animation_x = int(x + self.__animation_x_min)
-		self.__animation_y = int(y + self.__animation_y_min)
+	def __loop_rpi(self):
+		if self.__animation is not None:
+			frame = self.__animation_frames[self.__animation_frame]
+			image = Image.new('1', (self.__width, self.__height), 0)
+			image.paste(frame, (self.__animation_x, self.__animation_y))
+			self.__display.image(image)
+			self.__animation_frame += 1
+			if self.__animation_frame >= self.__animation_frames_len:
+				self.__animation_frame = 0
+		else:
+			self.__display.clear()

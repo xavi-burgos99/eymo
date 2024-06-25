@@ -45,18 +45,18 @@ def reset_config(path: str = CONFIG_FILE_PATH, default_path: str = TEMP_CONFIG_F
 	return config
 
 
-def init_logging() -> None:
+def init_logging(debug: bool = False) -> None:
 	"""Set up logging for debugging and system monitoring."""
 	if not os.path.exists('logs'):
 		os.makedirs('logs')
 	logger = logging.getLogger()
-	logger.setLevel(logging.INFO)
+	logger.setLevel(logging.DEBUG) if debug else logger.setLevel(logging.INFO)
 	file_handler = logging.FileHandler('logs/eymo.log')
-	file_handler.setLevel(logging.INFO)
+	file_handler.setLevel(logging.DEBUG) if debug else file_handler.setLevel(logging.INFO)
 	file_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 	file_handler.setFormatter(file_formatter)
 	console_handler = logging.StreamHandler()
-	console_handler.setLevel(logging.INFO)
+	console_handler.setLevel(logging.DEBUG) if debug else console_handler.setLevel(logging.INFO)
 	console_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 	console_handler.setFormatter(console_formatter)
 	if not logger.handlers:

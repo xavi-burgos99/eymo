@@ -17,7 +17,7 @@ from models.control_mode import ControlMode
 
 
 class RemoteService(Service):
-	DEPENDENCIES = ['camera', 'screen']
+	DEPENDENCIES = ['network', 'camera', 'screen']
 	LOOP_DELAY = 0.01
 
 	def __force_close_port(self, port: int):
@@ -147,21 +147,14 @@ class RemoteService(Service):
 							if frame is not None:
 								frame_base64 = base64.b64encode(frame).decode('utf-8')
 								data['image'] = frame_base64
-							#else:
-								#logging.warning("Failed to get the camera frame.")
-								#continue
 
 						# Send data
 						if True:
-							#if len(data) == 0:
-								#logging.warning('No data to send.')
-								#continue
 							data_json = json.dumps(data)
 							data_bytes = data_json.encode('utf-8')
 
 							frame_size = len(data_bytes)
 							conn.sendall(frame_size.to_bytes(4, byteorder='big'))
-							#logging.info(f'Sending frame size: {data_bytes}')
 							conn.sendall(data_bytes)
 
 						if self._global_config.get('system', {}).get('debug', True):
@@ -169,7 +162,7 @@ class RemoteService(Service):
 								now = time.time()
 								if self.__stream_frame_timestamp is not None:
 									fps = debug_interval / (now - self.__stream_frame_timestamp)
-									print(f'Camera Stream - FPS: {fps:.2f}')
+									logging.debug(f'Camera Stream - FPS: {fps:.2f}')
 								self.__stream_frame_timestamp = now
 						self.__stream_frame += 1
 					except (BrokenPipeError, ConnectionAbortedError, ConnectionResetError):
@@ -225,6 +218,7 @@ class RemoteService(Service):
 		Args:
 			data (dict): The control data
 		"""
+		logging.debug(f'Data received from socket: {data}')
 		if 'joystick' in data or 'mode' in data:
 			data_ = {}
 			if 'mode' in data:
@@ -240,15 +234,32 @@ class RemoteService(Service):
 					data_['displacement'] = {'x': x, 'y': y}
 			if data_ != {}:
 				self._services['arduino'].send(data_)
+		if 'phone' in data:
+			self._services['data_manager'].connect_mobile(data['phone'])
+		if 'cloud' in data:
+			cloud_data = self._services['data_manager'].subscribe('cloud', lambda key, value: None)
+			if 'host' in data['cloud']:
+				cloud_data['host'] = data['cloud']['host']
+			if 'endpoint' in data['cloud']:
+				cloud_data['endpoint'] = data['cloud']['endpoint']
+			if 'auth' in data['cloud']:
+				if 'endpoint' in data['cloud']['auth']:
+					cloud_data['auth']['endpoint'] = data['cloud']['auth']['endpoint']
+				if 'user' in data['cloud']['auth']:
+					cloud_data['auth']['user'] = data['cloud']['auth']['user']
+				if 'password' in data['cloud']['auth']:
+					cloud_data['auth']['password'] = data['cloud']['auth']['password']
+			self._services['data_manager'].update_data('cloud', cloud_data)
 
 	def __on_connect(self):
 		"""On connect event."""
-		mode = self._services['arduino'].get_mode()
-		self.send({'mode': mode})
+		data = self._global_config.copy()
+		data['mode'] = self._services['arduino'].get_mode()
+		self.send(data)
 
 	def __on_disconnect(self):
 		"""On disconnect event."""
-		pass
+		self._services['data_manager'].disconnect_mobile()
 
 	def send(self, data: dict):
 		"""Send data to the remote service."""
