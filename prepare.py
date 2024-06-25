@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
 	copy_files("eymo.sh", "temp/eymo.sh", replace)
 	copy_files("src/rpi", "temp/app", replace)
-	copy_files("requirements.txt", "temp/app/requirements.txt", replace)
+	copy_files("src/rpi/requirements.txt", "temp/app/requirements.txt", replace)
 	if not os.path.exists("temp/app/arduino"):
 		os.makedirs("temp/app/arduino")
 	copy_files("src/arduino/arduino.ino", "temp/app/arduino/arduino.ino", replace)
