@@ -31,9 +31,12 @@ class NetworkService(Service):
 	def __check_connection(self):
 		"""Check if the robot has internet connection."""
 		if os.path.exists(self.CHECK_CONNECTION_FILE):
-			self._services['screen'].standby()
+			if self.__has_internet == False:
+				logging.debug("[NETWORK] Changing screen to standby...")
+				self._services['screen'].mode(ScreenMode.STANDBY)
 			self.__has_internet = True
 		else:
+			logging.debug("[NETWORK] Changing screen to Wifi...")
 			self._services['screen'].mode(ScreenMode.WIFI)
 			self.__has_internet = False
 
@@ -43,14 +46,6 @@ class NetworkService(Service):
 
 		self.__ssid = str(os.getenv("WIFI_SSID"))
 		self.__password = str(os.getenv("WIFI_PASSWORD"))
-
-		# Reactivating wifi network
-		try:
-			subprocess.run(['sudo', 'nmcli', 'radio', 'wifi', 'off'], check=True)
-			subprocess.run(['sudo', 'nmcli', 'radio', 'wifi', 'on'], check=True)
-		except subprocess.CalledProcessError as e:
-			print(f"Error toggling Wi-Fi: {e}")
-			return
 
 	def loop(self):
 		"""Service loop."""
@@ -88,5 +83,7 @@ class NetworkService(Service):
 			if not os.path.exists(self.CHECK_CONNECTION_FILE):
 				open(self.CHECK_CONNECTION_FILE, "w").close()
 			logging.info(f"Successfully connected to {ssid}")
+			self._services['screen'].mode(ScreenMode.STANDBY)
+			self.__has_internet = True
 		except subprocess.CalledProcessError as e:
 			logging.error(f"Failed to connect to {ssid}: {e}")

@@ -1,8 +1,8 @@
 import logging
-import queue
-import threading
+import os
 import time
 import re
+import json
 
 from models.audio_player import AudioPlayer
 from models.frame_type import FrameType
@@ -19,13 +19,13 @@ class VoiceAssistantService(Service):
 	MAX_ERRORS = -1
 	ERROR_INTERVAL = 60
 
+	DEFAULT_RESPONSES_FILE = "./static/default_responses.json"
+
 	def init(self):
 		"""Initialize the service."""
-		self.__speaker = Speaker()
-		self.__player = AudioPlayer()
-
 		self.__responses = self._config.get('intents')
-		self.__pattern = self._config.get("pattern", "^(eymo|eimo|heimo|heymo|hemo|imo|inma|e inma|eima|eimos|oímos)\\b")
+		self.__pattern = self._config.get("pattern",
+										  "^(eymo|eimo|heimo|heymo|hemo|imo|inma|e inma|eima|eimos|oímos)\\b")
 		self.__threshold_duration = self._config.get("threshold_duration", 0.4)
 		self.__queue_timeout = self._config.get("queue_timeout", 10)
 
@@ -46,11 +46,23 @@ class VoiceAssistantService(Service):
 
 	def before(self):
 		"""Before the loop. (Before the loop method is called, in the service thread)"""
+		self.__speaker = Speaker()
+		self.__player = AudioPlayer()
 		self.__recognizer = sr.Recognizer()
 
-		self.__queue = queue.Queue(maxsize=self._config.get("queue_size", 2))
-		self.__lock = threading.Lock()
-		self.__stop_listening = threading.Event()
+		if not os.path.exists(self.DEFAULT_RESPONSES_FILE):
+			self.__default_responses = None
+		else:
+			with open(self.DEFAULT_RESPONSES_FILE, 'r', encoding='utf-8') as file:
+				self.__default_responses = json.load(file)
+
+		# self.__queue = queue.Queue(maxsize=self._config.get("queue_size", 2))
+		# self.__lock = threading.Lock()
+		# self.__stop_listening = threading.Event()
+
+		while True:
+			if self._services['network'].is_connected():
+				break
 
 		if self._demo_mode:
 			logging.info("Demo mode is activated. Executing...")
@@ -63,27 +75,38 @@ class VoiceAssistantService(Service):
 
 		try:
 			self.__speak(self._services['cloud'].call_server("gemini", {
-				"prompt": "Eres un asistente de voz, llamado Eymo. Te debes presentar a tus usuarios de manera breve y siendo muy cordial."}).get(
+				"prompt": "Eres un asistente de voz, llamado Eymo. Te debes presentar a tus usuarios de manera breve y siendo muy cordial.",
+				"reset": True}).get(
 				"response").get("result"))
 		except Exception as e:
 			logging.error(f"Error in voice assistant initialization: {e}")
 
 	def loop(self):
 		"""Service loop."""
-		with sr.Microphone(device_index=0) as mic:
-			self.__recognizer.pause_threshold = 1
-			self.__recognizer.adjust_for_ambient_noise(mic, duration=self.__threshold_duration)
-			logging.debug("Listening...")
-			audio = self.__recognizer.listen(mic, None)
-			text = self.__recognize_speech(audio)
-			if text:
-				match = re.match(self.__pattern, text, re.IGNORECASE)
-				if match:
-					if self.__player.is_playing:
-						self.__player.set_volume(40)
-					after_pattern = text[match.end():].strip()
-					logging.debug(f"After pattern: {after_pattern}")
-					self.__activate_assistant(mic, after_pattern)
+		try:
+			if self.__player.is_playing and not self.__player.paused:
+				self._services['screen'].mode(ScreenMode.MUSIC)
+			elif self._services['screen'].get_mode() == ScreenMode.MUSIC:
+				self._services['screen'].mode(ScreenMode.STANDBY)
+			with sr.Microphone() as mic:
+				self.__recognizer.pause_threshold = 1
+				self.__recognizer.adjust_for_ambient_noise(mic, duration=self.__threshold_duration)
+				logging.debug("Listening...")
+				audio = self.__recognizer.listen(mic, timeout=5)
+				text = self.__recognize_speech(audio)
+				if text:
+					match = re.search(self.__pattern, text, re.IGNORECASE)
+					if match:
+						if self.__player.is_playing:
+							self.__player.set_volume(40)
+						after_pattern = text[match.end():].strip()
+						logging.debug(f"After pattern: {after_pattern}")
+						self.__activate_assistant(mic, after_pattern)
+		except sr.WaitTimeoutError as e:
+			pass
+		except Exception as e:
+			self._services['screen'].mode(ScreenMode.STANDBY)
+			logging.error(f"Error in voice assistant loop {e}")
 
 	def __speak(self, text):
 		logging.info(f"[SPEAKER] Speaking: {text}")
@@ -106,15 +129,17 @@ class VoiceAssistantService(Service):
 
 	def __recognize_speech(self, audio):
 		try:
+			self._services['screen'].mode(ScreenMode.RECOGNIZING)
 			logging.debug("Trying to recognize speech...")
 			text = self.__recognizer.recognize_google(audio, language="es-ES")
 			logging.info(f"Speech recognized: {text}")
+			self._services['screen'].mode(ScreenMode.STANDBY)
 			return text.lower()
 		except sr.UnknownValueError:
+			self._services['screen'].mode(ScreenMode.STANDBY)
 			return None
 
 	def __activate_assistant(self, mic, after_pattern=None):
-		# self.screen.mode(ScreenMode.RECOGNIZING)
 		logging.info("[ASSISTANT ACTIVATED] Keyword detected. Activating assistant.")
 		if not after_pattern:
 			self.__speak(self._services['cloud'].call_server("gemini", {
@@ -131,7 +156,7 @@ class VoiceAssistantService(Service):
 			else:
 				self.__recognizer.pause_threshold = 1
 				self.__recognizer.adjust_for_ambient_noise(mic, duration=self.__threshold_duration)
-				audio = self.__recognizer.listen(mic)  # timeout=self.timeout)
+				audio = self.__recognizer.listen(mic, timeout=5)
 				text = self.__recognize_speech(audio)
 
 			if text == "para" or text == "adiós":
@@ -293,6 +318,7 @@ class VoiceAssistantService(Service):
 		}).get("response").get("result")
 
 	def __set_reminder(self, params):
+		self._services['screen'].mode(ScreenMode.REMINDER)
 		reminder = self._services['reminders'].set_reminder(params, self.__set_reminder_callback)
 		return self._services['cloud'].call_server("gemini", {
 			"prompt": f"Eres un asistente de voz, llamado EYMO. Te han pedido que le recuerdes al usuario que tiene que hacer {reminder}. Confirma que se lo vas a recordar cuando toque, aunque te de pereza.",
@@ -345,6 +371,8 @@ class VoiceAssistantService(Service):
 				self.__player.pause()
 				logging.info(f"Playlist: {self.__player.get_playlist()}")
 				logging.info(f"Current inidex: {self.__player.current_index}")
+				if self.__default_responses:
+					self.__default_responses.get('vale')
 				return self._services['cloud'].call_server("speech", {
 					"text": "Vale",
 				}).get("response").get("result")
@@ -356,6 +384,8 @@ class VoiceAssistantService(Service):
 				self.__player.play()
 				logging.info(f"Playlist: {self.__player.get_playlist()}")
 				logging.info(f"Current inidex: {self.__player.current_index}")
+				if self.__default_responses:
+					self.__default_responses.get('vale')
 				return self._services['cloud'].call_server("speech", {
 					"text": "Vale, la reanudo.",
 				}).get("response").get("result")
@@ -370,6 +400,8 @@ class VoiceAssistantService(Service):
 				self.__player.stop()
 				logging.info(f"Playlist: {self.__player.get_playlist()}")
 				logging.info(f"Current inidex: {self.__player.current_index}")
+				if self.__default_responses:
+					self.__default_responses.get('vale')
 				return self._services['cloud'].call_server("speech", {
 					"text": "Vale, la detengo.",
 				}).get("response").get("result")
@@ -380,21 +412,29 @@ class VoiceAssistantService(Service):
 				self.__player.next()
 				logging.info(f"Playlist: {self.__player.get_playlist()}")
 				logging.info(f"Current inidex: {self.__player.current_index}")
+				if self.__default_responses:
+					self.__default_responses.get('vale')
 				return self._services['cloud'].call_server("speech", {
 					"text": "Listo, pongo la siguiente cancion.",
 				}).get("response").get("result")
 		else:
 			logging.warning("[CONTROL_MUSIC] Invalid command.")
+			self._services['screen'].mode(ScreenMode.ERROR)
+
+			if self.__default_responses:
+				self.__default_responses.get('music_error')
 			return self._services['cloud'].call_server("speech", {
 				"text": "No se ha podido controlar la música. Por favor, intenta de nuevo.",
 			}).get("response").get("result")
 
 	def __get_weather(self, args):
 		logging.info("Getting weather...")
+
+		location_data = self._services['data_manager'].subscribe('robot_location', lambda key, value: None)
 		data = {
 			"option": args.get("option"),
-			"latitude": args.get("latitude"),
-			"longitude": args.get("longitude"),
+			"latitude": location_data.get('lat'),
+			"longitude": location_data.get('long'),
 		}
 		logging.info("Calling weather service...")
 		try:
@@ -403,45 +443,52 @@ class VoiceAssistantService(Service):
 					.get("result"))
 		except Exception as e:
 			logging.error(f"Error calling weather service: {e}")
+
+		self._services['screen'].mode(ScreenMode.ERROR)
+		if self.__default_responses:
+			return self.__default_responses.get('weather_error')
 		return self._services['cloud'].call_server("speech", {
 			"text": "Ha habido un problema al obtener el clima. Por favor, intenta de nuevo.",
 		}).get("response").get("result")
 
 	def __respond(self, text):
-		# Step 1: Check for functional commands
-		logging.info("Handling playback...")
-		location_data = self._services['data_manager'].subscribe('robot_location', lambda key, value: None)
-		response = self._services['cloud'].call_server("functional", {
-			"prompt": text + " | lat: " + str(location_data.get("lat")) + " lon: " + str(location_data.get("long"))})
-		logging.info(f"Playback response: {response}")
-		result = response.get('response').get('result')
-		logging.info(f"Playback result: {result}")
-		if result:
-			if result.get('function_name') == 'control_music':
-				return self.__control_music(result.get('function_args'))
-			elif result.get('function_name') == 'set_reminder':
-				return self.__set_reminder(result.get('function_args'))
-			elif result.get('function_name') == 'get_weather':
-				return self.__get_weather(result.get('function_args'))
-
-		# Step 2: Check for responses in the intents.json file
-		for key, response in self.__responses.items():
-			if key in text:
-				if response in self.__function_map:
-					result = self.__function_map[response](text.replace(key, ""))
-					if result:
-						return result
-				return response
-
-		# Step 3: Call Gemini AI otherwise
-		logging.info(f"Calling Gemini AI with text: {text}")
 		try:
+			# Step 1: Check for functional commands
+			logging.info("Calling functional...")
+			response = self._services['cloud'].call_server("functional", {"prompt": text})
+			logging.info(f"Functional response: {response}")
+			result = response.get('response').get('result')
+			logging.info(f"Functional result: {result}")
+			if result:
+				if result.get('function_name') == 'control_music':
+					return self.__control_music(result.get('function_args'))
+				elif result.get('function_name') == 'set_reminder':
+					return self.__set_reminder(result.get('function_args'))
+				elif result.get('function_name') == 'get_weather':
+					return self.__get_weather(result.get('function_args'))
+				elif result.get('function_name') == 'get_image_details':
+					return self.__get_image_details(prompt=text)
+
+			# Step 2: Check for responses in the intents.json file
+			for key, response in self.__responses.items():
+				if key in text:
+					if response in self.__function_map:
+						result = self.__function_map[response](text.replace(key, ""))
+						if result:
+							return result
+					return response
+
+			# Step 3: Call Gemini AI otherwise
+			logging.info(f"Calling Gemini AI with text: {text}")
 			response = self._services['cloud'].call_server("gemini", {"prompt": text}).get("response").get("result")
 			logging.info(f"Response from Gemini AI: {response}")
 			return response
 		except Exception as e:
 			logging.error(f"Error calling Gemini AI: {e}")
 
+		self._services['screen'].mode(ScreenMode.ERROR)
+		if self.__default_responses:
+			return self.__default_responses.get('error')
 		return self._services['cloud'].call_server("speech", {
 			"text": "Ha habido un problema al procesar tu solicitud. Por favor, intenta de nuevo.",
 		}).get("response").get("result")

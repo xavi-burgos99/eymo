@@ -1,4 +1,3 @@
-import numpy as np
 from PIL import Image
 from luma.core.interface.serial import i2c
 from luma.core.render import canvas

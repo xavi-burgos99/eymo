@@ -17,6 +17,7 @@ if not is_rpi():
 
 class ScreenService(Service):
 	DEPENDENCIES = ['arduino', 'camera', 'vision']
+	MAX_ERRORS = -1
 
 	ANIMATION_WIDTH = 64
 	ANIMATION_HEIGHT = 64
@@ -152,6 +153,9 @@ class ScreenService(Service):
 			self.__tk_mainloop_enabled = False
 			logging.info('Initializing tkinter...')
 			self.__tk_init()
+
+	def get_mode(self):
+		return self.__mode
 
 	def destroy(self):
 		"""Destroys the screen service."""

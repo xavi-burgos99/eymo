@@ -9,7 +9,6 @@ from dotenv import load_dotenv
 
 from models.server_input import ServerIn
 from services.service import Service
-
 from models.utils import is_rpi
 
 

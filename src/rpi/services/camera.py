@@ -77,5 +77,6 @@ class CameraService(Service):
 		if not ret:
 			return None
 		frame = cv2.resize(frame, tuple(self.__resolution))
+		frame = cv2.rotate(frame, cv2.ROTATE_180)
 		self.__last_frame = frame
 		return self.__convert_frame(type)
