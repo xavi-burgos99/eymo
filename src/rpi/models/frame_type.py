@@ -3,3 +3,4 @@ class FrameType:
 	NUMPY = 1
 	LIST = 2
 	BYTES = 3
+	BASE64 = 4
