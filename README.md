@@ -19,15 +19,15 @@
 ## Table of contents
 
 - [Table of contents](#table-of-contents)
+  - [Video Demonstration](#video-demonstration)
 - [Introduction](#introduction)
+- [Features](#features)
 - [Installation](#installation)
   - [Prerequisites](#prerequisites)
   - [Cloud](#cloud)
   - [Physic Robot](#physic-robot)
 - [What's included](#whats-included)
-- [To Do](#to-do)
 - [Bugs and feature requests](#bugs-and-feature-requests)
-- [Contributing](#contributing)
 - [Creators](#creators)
 - [Acknowledgement](#acknowledgement)
 - [References](#references)
@@ -38,6 +38,24 @@
 
 Eymo is a compact robotic companion blending machine learning and generative AI to create personalized and interactive experiences. It learns from its interactions, offering customized conversations, entertainment, and learning opportunities. Eymo is the perfect blend of technology and companionship, making every moment more engaging and enjoyable.
 
+### Video Demonstration
+The video demonstration showcases EYMO's features and capabilities: [Video](https://www.youtube.com/watch?v=EVsdH6iUvgM)
+
+## Features
+
+* Voice Assistant: Eymo includes a voice assistant that leverages cloud technology for advanced speech recognition. This enables Eymo to understand and respond to a wide range of voice commands, making interactions smooth and intuitive.
+
+* Mobile Control: Eymo can be controlled via dedicated mobile applications available for both Android and iOS. These apps provide a user-friendly interface to manage Eymo's functions, send commands, and receive updates, ensuring you stay connected with your robotic companion at all times.
+
+* Obstacle Detection and Avoidance: Eymo is equipped with sensors that detect obstacles and prevent it from colliding with objects or falling off edges, such as tables. This feature ensures Eymo navigates safely and reliably in various environments.
+
+### Mobile Apps
+We have developed mobile applications to control the EYMO Robot from your smartphone. There are applications available for both major mobile operating systems:
+
+* Android Application: Our Android app allows you to easily control the robot and send commands, as well as to share phone's location with the robot voice assistant. If you want to have access to the application, please contact the developers.
+* iOS Application: Similarly, we have an iOS app for iPhone users, providing the same functionality for controlling the robot movement.
+
+These applications enable seamless interaction with the robot, making it easy to operate and manage from anywhere.
 
 ## Installation
 
@@ -70,14 +88,13 @@ To set up the cloud part of the project, follow these steps:
 
 ### Physic Robot
 
-1. Clone the repo, install the dependencies and run the main file:
+1. Clone the repo and run the eymo.sh script to install all dependencies and prepare the Raspberry Pi for the robot:
 
 ```bash
-pip install -r requirements.txt
-cd src/rpi
-python main.py
+cd eymo
+./eymo.sh
 ```
-The main file will start the robot and the cloud connection. The robot will be able to receive commands from the cloud and execute them. The robot will also be able to send information to the cloud.
+The eymo.sh script will handle the installation of all necessary dependencies and set up your Raspberry Pi for the robot. Once the script completes, the robot will be ready to receive commands from the cloud and execute them. It will also be capable of sending information back to the cloud.
 
 ## What's included
 
@@ -102,7 +119,8 @@ src/
     ├── actions/
     │   ├── gemini/
     │   ├── test/
-    │   └── BaseAction.py
+    │   ├──BaseAction.py
+    │   └── ...
     ├── externals/
     │   ├── TextToSpeech.py
     │   ├── BaseApi.py
@@ -120,11 +138,7 @@ README.md
 
 ## Bugs and feature requests
 
-Have a bug or a feature request? Please first read the ~~[issue guidelines](https://github.com/xavi-burgos99/eymo/blob/main/CONTRIBUTING.md)~~ and search for existing and closed issues. If your problem or idea is not addressed yet, [please open a new issue](https://github.com/xavi-burgos99/eymo/issues/new).
-
-## Contributing
-
-Please read through our ~~[contributing guidelines](https://reponame/blob/master/CONTRIBUTING.md)~~. Included are directions for opening issues, coding standards, and notes on development.
+Have a bug or a feature request? Please, search for existing and closed issues. If your problem or idea is not addressed yet, [please open a new issue](https://github.com/xavi-burgos99/eymo/issues/new).
 
 ## Creators
 
